@@ -36,6 +36,7 @@ export async function POST(request) {
     // 3D. Causality Valve
     if (engine?.causality_linkage_valve?.enforce_therefore_but) {
       systemPrompt += `- CAUSALITY LINKAGE: The scene must end with a definitive Therefore/But narrative vector. No summary shorthand.\n`;
+      systemPrompt += `- LOGIC & PROSE RULE: The engine must maintain strict logical causality between paragraphs (Causality Gate must remain active). However, you are forbidden from using "Therefore", "But", "However", "Thus", or "Consequently" as sentence or paragraph starters. If the logic demands a "Therefore" (consequence), express it through the character's subsequent action or a change in the environment. If the logic demands a "But" (conflict/pivot), express it through a 'Sensory Shift'—a change in light, sound, or a pivot in camera focus. You must maintain the causal structure required by the valve while ensuring the prose remains purely visual and non-analytical.\n`;
     }
 
     systemPrompt += `\n=== THEMATIC & PERSPECTIVE SETTINGS ===\n`;
@@ -70,12 +71,16 @@ export async function POST(request) {
       });
     }
 
+    const saga = globalState.level_1_5_saga;
+    const currentEpisode = saga?.current_saga_index || 0;
+
     if (engine?.chekhov_vault_ledger && engine.chekhov_vault_ledger.length > 0) {
       systemPrompt += `\n=== CHEKHOV VAULT LEDGER ===\n`;
+      systemPrompt += `CONSEQUENCE AUDIT RULE: Check the global state for any plot devices marked as "Teased". If the current_episode (${currentEpisode}) is LESS than the device’s resolution_episode, you are MATHEMATICALLY FORBIDDEN from explaining the origin or true nature of that device. Instead, you must "pay interest" on this narrative debt by inserting 1-2 subtle subtextual clues or breadcrumbs referencing it. You may only explain the device, and trigger the "reveal", when the current_episode perfectly matches the resolution_episode.\n\n`;
       systemPrompt += `You must track these active plot devices in the background of the narrative:\n`;
       engine.chekhov_vault_ledger.forEach(item => {
         if (!item.description) return;
-        systemPrompt += `- [DEVICE]: ${item.description}\n`;
+        systemPrompt += `- [DEVICE]: ${item.description} (Causal Status: ${item.causal_status}, Resolution Episode: ${item.resolution_episode})\n`;
         if (item.force_payoff) {
           systemPrompt += `  * STRICT DIRECTIVE: You MUST integrate and resolve this item's narrative arc in the immediate output.\n`;
         }
@@ -86,12 +91,16 @@ export async function POST(request) {
       systemPrompt += `\n`;
     }
 
-    const saga = globalState.level_1_5_saga;
-    const isFinalEpisode = saga?.is_final_episode || (kernel?.progression_termination_mode === "fixed_grids" && saga?.current_saga_index >= kernel?.target_episode_count - 1);
+    const isFinalEpisode = saga?.is_final_episode || (kernel?.progression_termination_mode === "fixed_grids" && currentEpisode >= kernel?.target_episode_count - 1);
 
     if (isFinalEpisode) {
       systemPrompt += `\n=== EPILOGUE PROTOCOL ACTIVE ===\n`;
       systemPrompt += `STRICT DIRECTIVE: This is the FINAL EPISODE of the saga. You must resolve the primary narrative arc and output the final thematic realization that proves or disproves the Dialectic Matrix. Provide closure for the remaining characters based on the state.\n\n`;
+    }
+
+    if (saga?.is_epilogue_phase) {
+      systemPrompt += `\n=== POST-SAGA PROTOCOL ===\n`;
+      systemPrompt += `EPILOGUE RULE: The main saga conflict has been resolved. You must override the standard Friction Matrix. DO NOT introduce new world-ending stakes, major villains, or high-friction plot devices. The tone must immediately shift to 'Denouement'. Focus entirely on character reflections, healing, the reorganization of factions, and the establishment of the "new normal".\n\n`;
     }
 
     // 3B. Pass Entire State

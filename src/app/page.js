@@ -361,10 +361,28 @@ export default function ControlRoom() {
   const handleAdvanceTimeline = async () => {
     if (!generatedText) return;
 
+    // Detect if any "Teased" plot devices are ready to be resolved
+    const currentVaultLedger = state.current_state.level_4_vector_engine?.chekhov_vault_ledger || [];
+    const nextVaultLedger = currentVaultLedger.map(item => {
+      if (item.causal_status === "Teased" && saga.current_saga_index === item.resolution_episode) {
+        return { ...item, causal_status: "Resolved" };
+      }
+      return item;
+    });
+
+    const nextEpisodeIndex = saga.current_saga_index + 1;
+    const targetEpisodes = kernel.target_episode_count || 0;
+    const isEpilogue = kernel.progression_termination_mode === "fixed_grids" && nextEpisodeIndex >= targetEpisodes;
+
     updateState({
+      level_4_vector_engine: {
+        ...state.current_state.level_4_vector_engine,
+        chekhov_vault_ledger: nextVaultLedger
+      },
       level_1_5_saga: {
         ...saga,
-        current_saga_index: saga.current_saga_index + 1,
+        current_saga_index: nextEpisodeIndex,
+        is_epilogue_phase: isEpilogue,
         episode_history: [...(saga.episode_history || []), generatedText],
         immediate_synopsis: ""
       }
@@ -1544,6 +1562,28 @@ export default function ControlRoom() {
                               }
                             }}
                           />
+                          <div className="flex items-center space-x-3 mt-2">
+                            <select
+                              value={item.causal_status || "Unresolved"}
+                              onChange={(e) => updateVaultItem(item.id, { causal_status: e.target.value })}
+                              className="bg-black/50 border border-zinc-700 text-zinc-300 text-xs rounded px-2 py-1 focus:outline-none focus:border-amber-500/50"
+                            >
+                              <option value="Unresolved">Unresolved</option>
+                              <option value="Teased">Teased</option>
+                              <option value="Resolved">Resolved</option>
+                            </select>
+                            
+                            <div className="flex items-center space-x-1">
+                              <span className="text-xs text-zinc-500">Reveal Ep:</span>
+                              <input
+                                type="number"
+                                value={item.resolution_episode !== undefined ? item.resolution_episode : -1}
+                                onChange={(e) => updateVaultItem(item.id, { resolution_episode: parseInt(e.target.value) })}
+                                className="w-16 bg-black/50 border border-zinc-700 text-zinc-300 text-xs rounded px-2 py-1 focus:outline-none focus:border-amber-500/50"
+                                min="-1"
+                              />
+                            </div>
+                          </div>
                         </div>
 
                         {/* Controls Container */}
@@ -1613,7 +1653,7 @@ export default function ControlRoom() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>Compile Episode</span>
+                      <span>{saga.is_epilogue_phase ? "Explore Aftermath (Epilogue)" : "Compile Episode"}</span>
                     </>
                   )}
                 </button>

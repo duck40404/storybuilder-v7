@@ -20,6 +20,8 @@ CRITICAL CASTING RULE: You are a Master Showrunner. Before populating the level_
 
 CRITICAL WORLD-BUILDING RULE: Plot devices are narrative engines of conflict. By default, you must scale them organically to match the core genre (cozy stories get intimate devices; epics get macro-forces). HOWEVER, you must actively scan the user's premise for "Intentional Juxtaposition" (e.g., Magical Realism, the mundane mixed with the cosmic). If the premise explicitly combines clashing scales—like a barista dealing with an eldritch god—you MUST lean into the contrast. In these cases, generate a contrasting mix of plot devices (e.g., [Physical: A broken espresso machine] AND [Abstract: A localized tear in the space-time continuum]). Categorize their exact abstract or physical nature in the narrative_classification field. Only enforce strict, uniform genre-matching if the premise is purely one tone.
 
+CRITICAL MYSTERY RULE: You are not required to explain every plot device immediately. If a plot device is a major mystery or catalyst (e.g., an unexplained bomb, a mysterious artifact), assign it causal_status: "Teased" and set a resolution_episode in the future (e.g., Episode 10 or 20). This creates "Narrative Debt" that the story will pay off later.
+
 For each character, generate 1 to 3 highly specific, thematic props or costume elements in their inventory array. Default their status to "Equipped".`;
 
     if (!raw_spark_text || raw_spark_text.trim() === "") {
@@ -119,9 +121,11 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
                   description: { type: SchemaType.STRING }, 
                   narrative_classification: { type: SchemaType.STRING },
                   force_payoff: { type: SchemaType.BOOLEAN }, 
-                  locked: { type: SchemaType.BOOLEAN } 
+                  locked: { type: SchemaType.BOOLEAN },
+                  causal_status: { type: SchemaType.STRING, description: "Unresolved | Teased | Resolved" },
+                  resolution_episode: { type: SchemaType.INTEGER, description: "Episode number for reveal, or -1 if never explained" }
                 },
-                required: ["id", "description", "narrative_classification", "force_payoff", "locked"]
+                required: ["id", "description", "narrative_classification", "force_payoff", "locked", "causal_status", "resolution_episode"]
               }, 
               description: "Dynamically populated plot devices based on reasoning" 
             }

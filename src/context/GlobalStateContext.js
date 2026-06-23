@@ -34,6 +34,7 @@ export const DEFAULT_BLANK_STATE = {
     },
     "current_saga_index": 0,
     "is_final_episode": false,
+    "is_epilogue_phase": false,
     "episode_history": [],
     "global_faction_matrix": {},
     "continuity_lock_ledger": {},
@@ -113,14 +114,7 @@ export const DEFAULT_BLANK_STATE = {
       "scarcity_index": 5.0,
       "equilibrium_comparator_delta": 0.0
     },
-    "chekhov_vault_ledger": [
-      {
-        "id": "mock_vault_item_01",
-        "description": "A rusted pocket watch belonging to the antagonist",
-        "force_payoff": false,
-        "locked": false
-      }
-    ]
+    "chekhov_vault_ledger": []
   },
   "level_5_narrative_echo_matrix": {
     "synthesis_validator": {
