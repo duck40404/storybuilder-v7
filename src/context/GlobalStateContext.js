@@ -9,12 +9,13 @@ export const DEFAULT_BLANK_STATE = {
     "level_3_actors": false
   },
   "level_1_kernel": {
+    "world_scale": "standard",
     "raw_spark_text": "",
-    "dialogue_density_slider": 0,
+    "global_dialogue_density": 0,
     "user_agency_regulator": "automated | hybrid | manual",
     "progression_termination_mode": "fixed_grids | organic_convergence",
     "target_episode_count": 1,
-    "entropy_slider": 5,
+    "narrative_entropy_index": 5,
     "scope_valve": "micro_stakes | macro_stakes",
     "protagonist_distribution_mode": "single_focus | ensemble_round_robin",
     "dialectic_matrix": {
@@ -26,11 +27,13 @@ export const DEFAULT_BLANK_STATE = {
     "ending_payload_controller": "open | closed_finality | closed_loop"
   },
   "level_1_5_saga": {
+    "temporal_iteration_mode": false,
     "inter_scene_buffer_latch": true,
     "temporal_bleed_vector": "active",
     "saga_progression_rail": [],
     "geographical_context_demultiplexer": {
-      "active_context_lanes": {}
+      "active_context_lanes": {},
+      "convergence_override_active": false
     },
     "current_saga_index": 0,
     "is_final_episode": false,
@@ -44,9 +47,12 @@ export const DEFAULT_BLANK_STATE = {
       "gate_c_vault_clearance": false
     },
     "cumulative_synopsis": "",
-    "immediate_synopsis": ""
+    "immediate_synopsis": "",
+    "epistemic_ledger": [],
+    "rumor_propagation_queue": []
   },
   "level_2_domain": {
+    "universal_laws_ledger": [],
     "hegemony_node": {
       "mass_slider": 5.0
     },
@@ -75,16 +81,21 @@ export const DEFAULT_BLANK_STATE = {
     }
   },
   "level_3_actor_cards": {
-    "directory_ledger": {}, // Relational storage for characters
+    "desire_inversion_active": false,
+    "symbiotic_links": [],
+    "pov_characters": {},
+    "proxy_npcs": {},
     "active_viewport_slots": [null, null, null, null]
   },
   "level_4_vector_engine": {
+    "atmospheric_ma_override": false,
     "pacing_density_multiplier": {
       "target_scene_minutes": 5.0,
       "expansion_scalar": 140,
       "required_word_count": 700,
       "beat_density_minimum": 5
     },
+    "prose_economy_scalar": 5,
     "render_layer_isolation_gate": {
       "active": true,
       "strip_system_tags": true,
@@ -98,6 +109,10 @@ export const DEFAULT_BLANK_STATE = {
     "causality_linkage_valve": {
       "enforce_therefore_but": true,
       "prohibit_and_then": true
+    },
+    "the_dilemma_gate": {
+      "active": false,
+      "current_dilemma": ""
     },
     "pov_anchor": "Omniscient Objective",
     "kinesic_token_injector": {
@@ -138,14 +153,32 @@ export function GlobalStateProvider({ children }) {
     current_state: JSON.parse(JSON.stringify(DEFAULT_BLANK_STATE))
   });
 
+  const deepMerge = (target, source) => {
+    if (typeof target !== 'object' || target === null) return source;
+    if (typeof source !== 'object' || source === null) return source;
+    
+    // Handle arrays: just overwrite for now, or we could map them. 
+    // Wait, if it's an array, it's safer to overwrite completely 
+    // unless we need to merge by ID. The LLM usually returns full arrays.
+    if (Array.isArray(source)) {
+      return source;
+    }
+
+    const output = { ...target };
+    for (const key of Object.keys(source)) {
+      if (source[key] instanceof Object && !Array.isArray(source[key])) {
+        output[key] = deepMerge(target[key], source[key]);
+      } else {
+        output[key] = source[key];
+      }
+    }
+    return output;
+  };
   // Helper method to make partial state updates to the current_state easier
   const updateState = (updates) => {
     setState((prevState) => ({
       ...prevState,
-      current_state: {
-        ...prevState.current_state,
-        ...updates,
-      }
+      current_state: deepMerge(prevState.current_state, updates)
     }));
   };
 
@@ -159,7 +192,8 @@ export function GlobalStateProvider({ children }) {
 
   // Modular Accessors for Relational Data
   const getCharacterById = (id) => {
-    return state.current_state.level_3_actor_cards.directory_ledger[id] || null;
+    const cards = state.current_state.level_3_actor_cards;
+    return cards.pov_characters[id] || cards.proxy_npcs[id] || null;
   };
 
   const getLocationById = (id) => {

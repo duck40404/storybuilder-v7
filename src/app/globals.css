@@ -24,3 +24,72 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom range input styles */
+input[type=range].custom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type=range].custom-slider:focus {
+  outline: none;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+input[type=range].custom-slider::-webkit-slider-runnable-track {
+  background: #27272a; /* zinc-800 */
+  height: 2px;
+  border-radius: 9999px;
+}
+
+input[type=range].custom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -11px; /* Center the thumb on track */
+  background-color: #000000;
+  border: 2px solid #ffffff;
+  height: 24px;
+  width: 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+/* Firefox */
+input[type=range].custom-slider::-moz-range-track {
+  background: #27272a; /* zinc-800 */
+  height: 2px;
+  border-radius: 9999px;
+}
+
+input[type=range].custom-slider::-moz-range-thumb {
+  background-color: #000000;
+  border: 2px solid #ffffff;
+  height: 24px;
+  width: 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+

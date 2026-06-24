@@ -4,30 +4,93 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { raw_spark_text } = body;
+    const { raw_spark_text, trajectory, entropy_index, world_scale, complexity } = body;
 
     console.log("=== AUTO-BUILD INITIATED ===");
     console.log("Incoming raw_spark_text:", raw_spark_text);
+    console.log("Incoming trajectory:", trajectory);
+    console.log("Incoming entropy_index:", entropy_index);
+    console.log("Incoming world_scale:", world_scale);
+    console.log("Incoming complexity:", complexity);
     
-    let systemPrompt = `You are the Configuration Kernel for the Storybuilder v7.3 Narrative Engine. Generate the engine configuration for the following user premise based on the provided schema.
+    let systemPrompt = `You are the Configuration Kernel for the Storybuilder v8.1 Masterpiece Machine. Generate the engine configuration for the following user premise based on the provided schema.
 
-CRITICAL SYSTEM RULE: You are an expert Showrunner. Before you populate any arrays, you MUST write a short paragraph in the worldbuilding_reasoning field. In this paragraph, analyze the premise and explicitly declare exactly how many locations, props, and Chekhov's guns/plot devices are organically required to tell this specific story.
-> * For example, write: "This is a locked-room thriller. It organically requires 1 location, 3 props, and 1 plot device." OR "This is a sprawling epic. It requires 5 locations, 4 props, and 3 plot devices."
+CRITICAL SYSTEM RULE (v7.13 MULTIDIMENSIONAL SCALING MATRIX): You are an expert Showrunner. Before you populate any arrays, you MUST write a short paragraph in the worldbuilding_reasoning field evaluating the premise across four distinct axes (1-10 scale):
+1. Cast Scale: How many distinct perspectives/characters are needed? (e.g. Castaway=1, Game of Thrones=10)
+2. Domain Scale: How geographically expansive is the journey? (e.g. Panic Room=1, Lord of the Rings=10)
+3. Prop Scale: How many interactive physical items are required for the scene/world?
+4. Plot Device Scale: How many core mysteries/catalysts drive the conflict?
 
-Once you have declared these numbers in worldbuilding_reasoning, you are MATHEMATICALLY FORBIDDEN from returning empty arrays. You MUST populate location_ledger, environmental_props, and chekhov_vault_ledger with the exact number of objects you just reasoned were necessary.
+Based explicitly on these scores, you must declare exactly how many items to generate per category:
+> * If an axis is Intimate (1-3): You must generate 1 to 3 items for that category.
+> * If an axis is Standard (4-7): You must generate 4 or 5 items for that category.
+> * If an axis is Epic (8-10): You must generate 6 to 9 items for that category.
 
-CRITICAL CASTING RULE: You are a Master Showrunner. Before populating the level_3_actor_cards array, you MUST use the worldbuilding_reasoning paragraph to analyze the premise and declare exactly how many characters are organically required. A contained survival thriller might only need 1 character. A sprawling political epic might organically require 5 to 7 characters. You are mathematically forbidden from defaulting to 2 characters. Evaluate the scope, declare the exact cast size needed, and then populate level_3_actor_cards with that exact number of fully fleshed-out characters.
+You MUST bind level_3_actor_cards to the Cast Scale, location_ledger to the Domain Scale, environmental_props to the Prop Scale, and chekhov_vault_ledger to the Plot Device Scale. You are mathematically forbidden from returning empty arrays. You MUST populate the arrays with the exact number of objects you just reasoned were necessary.
+
+CRITICAL CASTING RULE: You must populate level_3_actor_cards with the exact number of fully fleshed-out characters dictated by your Cast Scale. Evaluate the scope, declare the exact cast size needed, and then generate them.
 
 CRITICAL WORLD-BUILDING RULE: Plot devices are narrative engines of conflict. By default, you must scale them organically to match the core genre (cozy stories get intimate devices; epics get macro-forces). HOWEVER, you must actively scan the user's premise for "Intentional Juxtaposition" (e.g., Magical Realism, the mundane mixed with the cosmic). If the premise explicitly combines clashing scales—like a barista dealing with an eldritch god—you MUST lean into the contrast. In these cases, generate a contrasting mix of plot devices (e.g., [Physical: A broken espresso machine] AND [Abstract: A localized tear in the space-time continuum]). Categorize their exact abstract or physical nature in the narrative_classification field. Only enforce strict, uniform genre-matching if the premise is purely one tone.
 
 CRITICAL MYSTERY RULE: You are not required to explain every plot device immediately. If a plot device is a major mystery or catalyst (e.g., an unexplained bomb, a mysterious artifact), assign it causal_status: "Teased" and set a resolution_episode in the future (e.g., Episode 10 or 20). This creates "Narrative Debt" that the story will pay off later.
 
-For each character, generate 1 to 3 highly specific, thematic props or costume elements in their inventory array. Default their status to "Equipped".`;
+PROFILE GENERATION RULE: When creating a character, you MUST assign specific 0-10 integers for their 5 kinesic_profile variables. Do not default to 5. You must use Biographical Seeding. Look strictly at the character's generated backstory, trauma, and goals, and mathematically map those traits onto the 5 sliders. Do not artificially force the protagonist and antagonist to be opposites. If two characters naturally have high Action Bias based on their lore, assign them both high numbers. The numbers must perfectly reflect the individual.
+
+THE NOVELTY SEED GENERATOR: You must actively fight "trope looping." Before generating any new scene or configuring this premise, initiate a "Cache Clear" on your environmental and archetype variables. Unless explicitly prompted by the user, you must generate a completely novel combination of Domain (Setting) and Actor Cards (Protagonists) that you have not used in the previous 5 iterations.
+
+THE INFINITE CASTING POOL (v7.11 ARCHETYPE CACHE-WIPE): For every new story execution, the engine must generate 100% novel names, unique physical descriptions, and fresh relationship dynamics. You are STRICTLY FORBIDDEN from generating "Corporate/Bureaucratic Directors" or "Whining/Horrified Locals" unless explicitly requested by the user. You must generate deeply asymmetrical, idiosyncratic personalities instead of generic roles. Never reuse past names (e.g., Silas, Elara, Aris, Evelyn, Brendan) or specific props (e.g., brass keys, glowing orbs).
+
+For each character, generate 1 to 3 highly specific, thematic props or costume elements in their inventory array. Default their status to "Equipped".
+
+=== FORCED NOVELTY INJECTION ===
+Your internal RNG Seed for this generation is: ${Math.floor(Math.random() * 1000000)}.
+You must subconsciously tint the aesthetics of this generation with the following randomly assigned motif: ${["Cassette-futurism", "Gothic Western", "Biopunk", "Art Deco Decay", "Brutalist Magic", "Clockwork Horror", "Neon-noir", "Mythic Pastoral", "Industrial Oceanic", "Salvage-punk"][Math.floor(Math.random() * 10)]}. Use this purely for aesthetic flavor and distinct physical descriptions, without changing the core genre of the user's premise.
+
+=== AI INTELLIGENCE LAYER: MASTERPIECE ARCHETYPES ===
+You must mathematically toggle the Master Levers in the JSON payload based on the premise:
+- If Epic Fantasy/Political Drama: Output world_scale = "epic". 
+- If Whimsical/Atmospheric (e.g. Studio Ghibli): Output atmospheric_ma_override = true in level_4_vector_engine.
+- If Hard Magic/Sci-Fi: Populate the universal_laws_ledger with unbreakable rules.
+- If Absurdist/Chaotic (e.g. Chainsaw Man): Set desire_inversion_active = true for the protagonist.
+- If Time Loop: Output temporal_iteration_mode = true in level_1_5_saga.
+Failure to pull the correct master levers will result in a fatal architectural mismatch.`;
+
+    if (world_scale && world_scale !== "AI Default") {
+      systemPrompt += `\n\nUSER OVERRIDE: You MUST set the world_scale to "${world_scale}" and explicitly adjust the story scope, location ledger, and plot devices to match this exact scale.`;
+    }
+    
+    if (complexity && complexity !== "AI Default") {
+      systemPrompt += `\n\nUSER OVERRIDE: You MUST design the narrative with a "${complexity}" complexity level.`;
+      if (complexity === "extreme") systemPrompt += ` Generate an extremely complex web of interwoven plots, massive character rosters across the POV and NPC arrays, and intense political or philosophical friction matrices.`;
+      if (complexity === "low") systemPrompt += ` Generate a very straightforward, linear story with a tight focus, very few characters, and simple, direct character motivations.`;
+    }
 
     if (!raw_spark_text || raw_spark_text.trim() === "") {
       systemPrompt += `\n\nThe user has provided NO premise. You have absolute creative freedom. You must invent a brilliant, highly original story premise from scratch. Include this invented premise in the generated_spark field. Then, generate all the Level 1, 2, and 3 settings to perfectly match your new premise. You MUST provide an estimated episode counter in the target_episode_count field based organically on the scale of your invented story (e.g., 1 for a short film, 10 for a mini-series).`;
     } else {
       systemPrompt += `\n\nRaw Story Premise:\n"${raw_spark_text}"`;
+    }
+
+    if (trajectory) {
+      systemPrompt += `\n\n=== PACING OVERRIDE ===\n`;
+      systemPrompt += `You must strictly obey the user's progression termination mode.\n`;
+      if (trajectory.mode === "FIXED_GRID") {
+        systemPrompt += `The mode is FIXED_GRID. You must spread your Narrative Debt and resolution targets across exactly ${trajectory.target} episodes. Do not default to organic convergence unless explicitly instructed. Output 'fixed_grids' for progression_termination_mode and ${trajectory.target} for target_episode_count.\n`;
+        
+        if (trajectory.target === 1) {
+          systemPrompt += `CRITICAL CONSTRAINT: The user has requested exactly 1 episode (a short film / vignette). You MUST aggressively downscale the Cast Scale and Plot Device Scale. You are FORBIDDEN from generating more than 2 characters and 2 plot devices. A single episode will buckle under too much weight.\n`;
+        } else if (trajectory.target <= 3) {
+          systemPrompt += `CRITICAL CONSTRAINT: The user has requested a very short run (${trajectory.target} episodes). Keep the Cast Scale and Plot Device Scale low (max 3 characters, max 3 plot devices) to avoid structural bloat.\n`;
+        }
+      } else if (trajectory.mode === "BOUNDED_RANGE") {
+        systemPrompt += `The mode is BOUNDED_RANGE. You must spread your Narrative Debt and resolution targets across between ${trajectory.min} and ${trajectory.max} episodes. Output 'bounded_range' for progression_termination_mode.\n`;
+      } else {
+        systemPrompt += `The mode is ORGANIC_CONVERGENCE. You must let the story conclude naturally when all narrative debt is resolved. Output 'organic_convergence' for progression_termination_mode.\n`;
+      }
+    }
+
+    if (entropy_index !== undefined) {
+      systemPrompt += `\n\nOutput ${entropy_index} for narrative_entropy_index.\n`;
     }
 
     const configSchema = {
@@ -40,9 +103,10 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
         level_1_kernel: {
           type: SchemaType.OBJECT,
           properties: {
-            entropy_slider: { type: SchemaType.NUMBER, description: "0 to 10" },
+            world_scale: { type: SchemaType.STRING, description: "intimate | standard | epic" },
+            narrative_entropy_index: { type: SchemaType.NUMBER, description: "0 to 10" },
             user_agency_regulator: { type: SchemaType.STRING, description: "automated | hybrid | manual" },
-            progression_termination_mode: { type: SchemaType.STRING, description: "fixed_grids | organic_convergence" },
+            progression_termination_mode: { type: SchemaType.STRING, description: "fixed_grids | organic_convergence | bounded_range" },
             target_episode_count: { type: SchemaType.NUMBER },
             scope_valve: { type: SchemaType.STRING, description: "micro_stakes | macro_stakes" },
             protagonist_distribution_mode: { type: SchemaType.STRING, description: "single_focus | ensemble_round_robin" },
@@ -58,7 +122,28 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
               required: ["core_claim", "counter_claim", "thematic_status_node"]
             }
           },
-          required: ["entropy_slider", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix"]
+          required: ["world_scale", "narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix"]
+        },
+        level_1_5_saga: {
+          type: SchemaType.OBJECT,
+          properties: {
+            temporal_iteration_mode: { type: SchemaType.BOOLEAN },
+            epistemic_ledger: {
+              type: SchemaType.ARRAY,
+              description: "The global knowledge ledger. Tracks active secrets, who knows them, and who is ignorant of them.",
+              items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  secret_id: { type: SchemaType.STRING, description: "e.g., THE_TRUE_HEIR" },
+                  description: { type: SchemaType.STRING },
+                  known_by: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "Array of character names who know this secret" },
+                  ignorant: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING }, description: "Array of character names who explicitly do NOT know this secret" }
+                },
+                required: ["secret_id", "description", "known_by", "ignorant"]
+              }
+            }
+          },
+          required: ["temporal_iteration_mode", "epistemic_ledger"]
         },
         level_2_domain: {
           type: SchemaType.OBJECT,
@@ -70,6 +155,18 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
                 tier_2_aesthetic: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
               },
               required: ["tier_1_genre", "tier_2_aesthetic"]
+            },
+            universal_laws_ledger: {
+              type: SchemaType.ARRAY,
+              description: "Immutable physics or magic rules of the universe. E.g., 'Human transmutation is impossible'.",
+              items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  rule: { type: SchemaType.STRING },
+                  consequence: { type: SchemaType.STRING, description: "Catastrophic physical cost if broken" }
+                },
+                required: ["rule", "consequence"]
+              }
             },
             hegemony_node: {
               type: SchemaType.OBJECT,
@@ -130,14 +227,19 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
               description: "Dynamically populated plot devices based on reasoning" 
             }
           },
-          required: ["dictionary_cascade", "hegemony_node", "active_viewport_box", "worldbuilding_reasoning", "location_ledger", "environmental_props", "chekhov_vault_ledger"]
+          required: ["dictionary_cascade", "universal_laws_ledger", "hegemony_node", "active_viewport_box", "worldbuilding_reasoning", "location_ledger", "environmental_props", "chekhov_vault_ledger"]
         },
         level_3_actor_cards: {
           type: SchemaType.OBJECT,
           properties: {
-            directory_ledger: {
+            symbiotic_links: {
               type: SchemaType.ARRAY,
-              description: "A dynamic array of character profiles. Size scales organically with story scope.",
+              description: "Array of character names that share a symbiotic bond (0 relational friction)",
+              items: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+            },
+            pov_characters: {
+              type: SchemaType.ARRAY,
+              description: "Fully fleshed out POV characters with deep psychological matrices.",
               items: {
                 type: SchemaType.OBJECT,
                 properties: {
@@ -161,6 +263,17 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
                     },
                     required: ["axis_1_ideological", "axis_2_operational", "axis_3_relational", "axis_4_existential"]
                   },
+                  kinesic_profile: {
+                    type: SchemaType.OBJECT,
+                    properties: {
+                      morality_empathy: { type: SchemaType.NUMBER },
+                      action_bias: { type: SchemaType.NUMBER },
+                      emotional_armor: { type: SchemaType.NUMBER },
+                      thematic_alignment: { type: SchemaType.NUMBER },
+                      verbal_density: { type: SchemaType.NUMBER }
+                    },
+                    required: ["morality_empathy", "action_bias", "emotional_armor", "thematic_alignment", "verbal_density"]
+                  },
                   three_tier_desire_stack: {
                     type: SchemaType.OBJECT,
                     properties: {
@@ -170,15 +283,8 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
                     },
                     required: ["macro_want", "meso_want", "micro_want"]
                   },
-                  kinetic_wave_envelope_modulators: {
-                    type: SchemaType.OBJECT,
-                    properties: {
-                      emotional_inertia_scalar: { type: SchemaType.NUMBER },
-                      somatic_charge_velocity: { type: SchemaType.NUMBER },
-                      somatic_decay_velocity: { type: SchemaType.NUMBER }
-                    },
-                    required: ["emotional_inertia_scalar", "somatic_charge_velocity", "somatic_decay_velocity"]
-                  },
+
+                  desire_inversion_active: { type: SchemaType.BOOLEAN },
                   inventory: {
                     type: SchemaType.ARRAY,
                     items: {
@@ -192,14 +298,35 @@ For each character, generate 1 to 3 highly specific, thematic props or costume e
                     }
                   }
                 },
-                required: ["character_id", "the_shield", "the_blueprint", "four_axis_friction_matrix", "three_tier_desire_stack", "kinetic_wave_envelope_modulators", "inventory"]
+                required: ["character_id", "the_shield", "the_blueprint", "four_axis_friction_matrix", "kinesic_profile", "three_tier_desire_stack", "desire_inversion_active", "inventory"]
+              }
+            },
+            proxy_npcs: {
+              type: SchemaType.ARRAY,
+              description: "Flattened NPC schema for minor characters (Name, Faction Loyalty, Current Objective). Prevents bloat.",
+              items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  character_id: { type: SchemaType.STRING },
+                  the_shield: { type: SchemaType.STRING, description: "Character Name" },
+                  faction_loyalty: { type: SchemaType.STRING },
+                  current_objective: { type: SchemaType.STRING }
+                },
+                required: ["character_id", "the_shield", "faction_loyalty", "current_objective"]
               }
             }
           },
-          required: ["directory_ledger"]
+          required: ["symbiotic_links", "pov_characters", "proxy_npcs"]
+        },
+        level_4_vector_engine: {
+          type: SchemaType.OBJECT,
+          properties: {
+            atmospheric_ma_override: { type: SchemaType.BOOLEAN }
+          },
+          required: ["atmospheric_ma_override"]
         }
       },
-      required: ["level_1_kernel", "level_2_domain", "level_3_actor_cards"]
+      required: ["level_1_kernel", "level_1_5_saga", "level_2_domain", "level_3_actor_cards", "level_4_vector_engine"]
     };
 
     // Initialize Gemini
