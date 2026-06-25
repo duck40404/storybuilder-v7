@@ -665,8 +665,8 @@ export default function ControlRoom() {
         // 3. Threshold Check
         let passed = false;
         if (evalData && evalData.success) {
-          const { pacing_density, character_realism, causal_logic, thematic_resonance, captivation } = evalData;
-          if (pacing_density >= 8 && character_realism >= 8 && causal_logic >= 8 && thematic_resonance >= 8 && captivation >= 8) {
+          const { pacing_density, character_realism, causal_logic, thematic_resonance, captivation, structural_novelty } = evalData;
+          if (pacing_density >= 8 && character_realism >= 8 && causal_logic >= 8 && thematic_resonance >= 8 && captivation >= 8 && structural_novelty >= 8) {
             passed = true;
           }
         }
