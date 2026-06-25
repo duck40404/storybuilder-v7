@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { raw_spark_text, trajectory, entropy_index, world_scale, complexity } = body;
+    const { raw_spark_text, trajectory, entropy_index, world_scale, complexity, fingerprint } = body;
 
     console.log("=== AUTO-BUILD INITIATED ===");
     console.log("Incoming raw_spark_text:", raw_spark_text);
@@ -38,7 +38,7 @@ PROFILE GENERATION RULE: When creating a character, you MUST assign specific 0-1
 
 THE NOVELTY SEED GENERATOR: You must actively fight "trope looping." Before generating any new scene or configuring this premise, initiate a "Cache Clear" on your environmental and archetype variables. Unless explicitly prompted by the user, you must generate a completely novel combination of Domain (Setting) and Actor Cards (Protagonists) that you have not used in the previous 5 iterations.
 
-THE INFINITE CASTING POOL (v7.11 ARCHETYPE CACHE-WIPE): For every new story execution, the engine must generate 100% novel names, unique physical descriptions, and fresh relationship dynamics. You are STRICTLY FORBIDDEN from generating "Corporate/Bureaucratic Directors" or "Whining/Horrified Locals" unless explicitly requested by the user. You must generate deeply asymmetrical, idiosyncratic personalities instead of generic roles. Never reuse past names (e.g., Silas, Elara, Aris, Evelyn, Brendan) or specific props (e.g., brass keys, glowing orbs).
+THE INFINITE CASTING POOL (v7.11 ARCHETYPE CACHE-WIPE): For every new story execution, the engine must generate 100% novel names, unique physical descriptions, and fresh relationship dynamics. You are STRICTLY FORBIDDEN from generating "Corporate/Bureaucratic Directors" or "Whining/Horrified Locals" unless explicitly requested by the user. You must generate deeply asymmetrical, idiosyncratic personalities instead of generic roles.
 
 For each character, generate 1 to 3 highly specific, thematic props or costume elements in their inventory array. Default their status to "Equipped".
 
@@ -78,6 +78,12 @@ Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1
       systemPrompt += `\n\nUSER OVERRIDE: You MUST design the narrative with a "${complexity}" complexity level.`;
       if (complexity === "extreme") systemPrompt += ` Generate an extremely complex web of interwoven plots, massive character rosters across the POV and NPC arrays, and intense political or philosophical friction matrices.`;
       if (complexity === "low") systemPrompt += ` Generate a very straightforward, linear story with a tight focus, very few characters, and simple, direct character motivations.`;
+    }
+
+    if (fingerprint) {
+      systemPrompt += `\n\n=== STRUCTURAL NOVELTY COORDINATES ===\n`;
+      systemPrompt += `You MUST strictly BIND level_1_kernel.dialectic_matrix to the following dialectic family: ${fingerprint.dialectic_family}\n`;
+      systemPrompt += `You MUST strictly BIND level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame to the following ending mode: ${fingerprint.ending_mode}\n`;
     }
 
     if (!raw_spark_text || raw_spark_text.trim() === "") {

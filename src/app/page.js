@@ -17,6 +17,7 @@ export default function ControlRoom() {
   const [isCompiling, setIsCompiling] = useState(false);
   const [isUpdatingSynopsis, setIsUpdatingSynopsis] = useState(false);
   const [isRefining, setIsRefining] = useState(false);
+  const [sparkFingerprint, setSparkFingerprint] = useState(null);
   const [directorsNotes, setDirectorsNotes] = useState(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showReviewPanel, setShowReviewPanel] = useState(false);
@@ -290,6 +291,9 @@ export default function ControlRoom() {
         if (data.recommendedEntropyIndex !== undefined) {
           updateKernel({ narrative_entropy_index: data.recommendedEntropyIndex });
         }
+        if (data.fingerprint) {
+          setSparkFingerprint(data.fingerprint);
+        }
       } else if (data.error) {
         throw new Error(data.error);
       }
@@ -318,7 +322,8 @@ export default function ControlRoom() {
           },
           entropy_index: preFlightEntropy,
           world_scale: autobuildWorldScale,
-          complexity: autobuildComplexity
+          complexity: autobuildComplexity,
+          fingerprint: sparkFingerprint
         })
       });
 
