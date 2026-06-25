@@ -124,9 +124,13 @@ Failure to pull the correct master levers will result in a fatal architectural m
             global_dialogue_density: {
               type: SchemaType.NUMBER,
               description: "0 = dialogue banned BY DESIGN (Seedance lipsync); >0 enables. Keep 0 until lipsync solved."
+            },
+            scene_register: {
+              type: SchemaType.STRING,
+              description: "plot | action | rest_beat | ma"
             }
           },
-          required: ["world_scale", "narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix", "global_dialogue_density"]
+          required: ["world_scale", "narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix", "global_dialogue_density", "scene_register"]
         },
         level_1_5_saga: {
           type: SchemaType.OBJECT,

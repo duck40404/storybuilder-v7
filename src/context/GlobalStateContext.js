@@ -24,7 +24,8 @@ export const DEFAULT_BLANK_STATE = {
       "thematic_status_node": "equilibrium | confrontation | synthesis"
     },
     "structural_rhythm_preset": "slow_burn | relentless_compression",
-    "ending_payload_controller": "open | closed_finality | closed_loop"
+    "ending_payload_controller": "open | closed_finality | closed_loop",
+    "scene_register": "plot"
   },
   "level_1_5_saga": {
     "temporal_iteration_mode": false,

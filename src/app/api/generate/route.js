@@ -24,6 +24,8 @@ export async function POST(request) {
       level_4_vector_engine: engine
     } = globalState;
 
+    const sceneRegister = kernel?.scene_register || (engine?.atmospheric_ma_override ? 'ma' : 'plot');
+
     const genre = domain?.dictionary_cascade?.tier_1_genre?.join(", ") || "generic";
     const aesthetic = domain?.dictionary_cascade?.tier_2_aesthetic?.join(", ") || "standard";
 
@@ -55,8 +57,10 @@ export async function POST(request) {
       }
     }
 
-    if (engine?.atmospheric_ma_override) {
+    if (sceneRegister === 'ma') {
       systemPrompt += `- ATMOSPHERIC "MA" OVERRIDE (FRICTION = 0): You are in a Ghibli-style 'Ma' scene. You MUST disable strict causality and physical conflict. The characters are allowed to be "passive observers". Let the scene breathe. Focus entirely on atmospheric environmental animacy, empathetic reflection, and negative space. Do not force a physical confrontation.\n`;
+    } else if (sceneRegister === 'rest_beat') {
+      systemPrompt += `- REST BEAT (REDUCED FRICTION): You are in a 'Rest Beat' scene. Reduce physical friction and strict causality. Focus on character reflection, mild interaction, and internal recalibration after high action.\n`;
     } else if (engine?.causality_linkage_valve?.enforce_therefore_but) {
       systemPrompt += `- CAUSALITY LINKAGE: The scene must end with a definitive Therefore/But narrative vector. No summary shorthand.\n`;
       systemPrompt += `- LOGIC & PROSE RULE: The engine must maintain strict logical causality between paragraphs (Causality Gate must remain active). However, you are forbidden from using "Therefore", "But", "However", "Thus", or "Consequently" as sentence or paragraph starters. If the logic demands a "Therefore" (consequence), express it through the character's subsequent action or a change in the environment. If the logic demands a "But" (conflict/pivot), express it through a 'Sensory Shift'—a change in light, sound, or a pivot in camera focus. You must maintain the causal structure required by the valve while ensuring the prose remains purely visual and non-analytical.\n`;
@@ -229,8 +233,10 @@ export async function POST(request) {
     systemPrompt += `MINIMUM LENGTH RULE: You must generate a MINIMUM of ${requiredWordCount} words for this sequence. Expand the structural beats, environmental descriptions, and action sequences to hit this minimum volume. Do not use summary shorthand.\n`;
     systemPrompt += `MAXIMUM LENGTH RULE: There is NO maximum word count limit. You are authorized to write as much as necessary to organically complete the scene logic. Do not arbitrarily compress or artificially end the scene early.\n\n`;
 
-    systemPrompt += `\n=== AGENCY GATE ===\n`;
-    systemPrompt += `Before writing a character into a scene, audit their causal utility. If a character (e.g., "Finn") does not actively change the scene's outcome, generate friction, or provide necessary counter-dialogue, you MUST delete them from the scene. No passive observers are allowed.\n\n`;
+    if (sceneRegister !== 'ma' && sceneRegister !== 'rest_beat') {
+      systemPrompt += `\n=== AGENCY GATE ===\n`;
+      systemPrompt += `Before writing a character into a scene, audit their causal utility. If a character (e.g., "Finn") does not actively change the scene's outcome, generate friction, or provide necessary counter-dialogue, you MUST delete them from the scene. No passive observers are allowed.\n\n`;
+    }
 
     const dialogueDensity = globalState?.level_1_kernel?.global_dialogue_density ?? 0;
     if (dialogueDensity === 0) {
@@ -251,11 +257,15 @@ export async function POST(request) {
     systemPrompt += `\n=== OPERATIONAL HEURISTICS ===\n`;
     systemPrompt += `You must obey the following operational rendering heuristics for all generation:\n`;
     systemPrompt += `1. The "Show, Don't Tell" Rendering Constraint: You are forbidden from using abstract summary words (e.g., "impossible," "unfathomable," "indescribable"). If a phenomenon breaks the laws of physics, render it mechanically (e.g., altering temperature, warping reflections). Force the physics engine to render the scene.\n`;
-    systemPrompt += `2. The Law of Equivalent Exchange: ZERO "Deus Ex Machina" resolutions. A magic item or environment cannot spontaneously solve the protagonist's problem. Every progression requires a transaction. To survive or fix a problem, they MUST sacrifice a tangible variable (equipment, memory, health, relationship). The climax must be driven by an active, costly choice.\n`;
+    if (sceneRegister !== 'ma' && sceneRegister !== 'rest_beat') {
+      systemPrompt += `2. The Law of Equivalent Exchange: ZERO "Deus Ex Machina" resolutions. A magic item or environment cannot spontaneously solve the protagonist's problem. Every progression requires a transaction. To survive or fix a problem, they MUST sacrifice a tangible variable (equipment, memory, health, relationship). The climax must be driven by an active, costly choice.\n`;
+    }
     systemPrompt += `3. Kinesic Grounding: Abstract poetic metaphors for emotional states (e.g., "she was a hole in his life") must be translated into physical, filmable action. Anchor all emotional weight in the physical space. Show grief or fear through how characters manipulate props, their breathing patterns, or their interaction with setting geometry.\n\n`;
 
-    systemPrompt += `\n=== AGENCY GATE: THE CONFLICT-AGENCY LINK ===\n`;
-    systemPrompt += `Every scene climax MUST pass the "Sacrifice/Ingenuity" Test. If your resolution relies on a magical item, a ghost, or an environmental miracle without the protagonist having made a prior, costly choice or demonstrated active skill, you MUST trigger an [AGENCY FAILURE EXCEPTION], discard the draft, and rewrite the sequence so the character is the primary engine of the resolution.\n\n`;
+    if (sceneRegister !== 'ma' && sceneRegister !== 'rest_beat') {
+      systemPrompt += `\n=== AGENCY GATE: THE CONFLICT-AGENCY LINK ===\n`;
+      systemPrompt += `Every scene climax MUST pass the "Sacrifice/Ingenuity" Test. If your resolution relies on a magical item, a ghost, or an environmental miracle without the protagonist having made a prior, costly choice or demonstrated active skill, you MUST trigger an [AGENCY FAILURE EXCEPTION], discard the draft, and rewrite the sequence so the character is the primary engine of the resolution.\n\n`;
+    }
 
 
     if (state_change_report) {

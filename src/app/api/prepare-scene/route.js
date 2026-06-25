@@ -72,9 +72,13 @@ export async function POST(request) {
                 thematic_status_node: { type: SchemaType.STRING, description: "equilibrium | confrontation | synthesis" }
               },
               required: ["core_claim", "counter_claim", "thematic_status_node"]
+            },
+            scene_register: {
+              type: SchemaType.STRING,
+              description: "plot | action | rest_beat | ma"
             }
           },
-          required: ["narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix"]
+          required: ["narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix", "scene_register"]
         },
         level_1_5_saga: {
           type: SchemaType.OBJECT,
