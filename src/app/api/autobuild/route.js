@@ -12,6 +12,9 @@ export async function POST(request) {
     console.log("Incoming entropy_index:", entropy_index);
     console.log("Incoming world_scale:", world_scale);
     console.log("Incoming complexity:", complexity);
+    const rngSeed = Math.floor(Math.random() * 1000000);
+    const motifs = ["Cassette-futurism", "Gothic Western", "Biopunk", "Art Deco Decay", "Brutalist Magic", "Clockwork Horror", "Neon-noir", "Mythic Pastoral", "Industrial Oceanic", "Salvage-punk"];
+    const randomMotif = motifs[Math.floor(Math.random() * 10)];
     
     let systemPrompt = `You are the Configuration Kernel for the Storybuilder v8.1 Masterpiece Machine. Generate the engine configuration for the following user premise based on the provided schema.
 
@@ -43,8 +46,8 @@ THE INFINITE CASTING POOL (v7.11 ARCHETYPE CACHE-WIPE): For every new story exec
 For each character, generate 1 to 3 highly specific, thematic props or costume elements in their inventory array. Default their status to "Equipped".
 
 === FORCED NOVELTY INJECTION ===
-Your internal RNG Seed for this generation is: ${Math.floor(Math.random() * 1000000)}.
-You must subconsciously tint the aesthetics of this generation with the following randomly assigned motif: ${["Cassette-futurism", "Gothic Western", "Biopunk", "Art Deco Decay", "Brutalist Magic", "Clockwork Horror", "Neon-noir", "Mythic Pastoral", "Industrial Oceanic", "Salvage-punk"][Math.floor(Math.random() * 10)]}. Use this purely for aesthetic flavor and distinct physical descriptions, without changing the core genre of the user's premise.
+Your internal RNG Seed for this generation is: ${rngSeed}.
+You must subconsciously tint the aesthetics of this generation with the following randomly assigned motif: ${randomMotif}. Use this purely for aesthetic flavor and distinct physical descriptions, without changing the core genre of the user's premise.
 
 === AI INTELLIGENCE LAYER: MASTERPIECE ARCHETYPES ===
 You must mathematically toggle the Master Levers in the JSON payload based on the premise:
