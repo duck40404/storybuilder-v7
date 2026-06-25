@@ -120,9 +120,13 @@ Failure to pull the correct master levers will result in a fatal architectural m
                 thematic_status_node: { type: SchemaType.STRING, description: "equilibrium | confrontation | synthesis" }
               },
               required: ["core_claim", "counter_claim", "thematic_status_node"]
+            },
+            global_dialogue_density: {
+              type: SchemaType.NUMBER,
+              description: "0 = dialogue banned BY DESIGN (Seedance lipsync); >0 enables. Keep 0 until lipsync solved."
             }
           },
-          required: ["world_scale", "narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix"]
+          required: ["world_scale", "narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix", "global_dialogue_density"]
         },
         level_1_5_saga: {
           type: SchemaType.OBJECT,
