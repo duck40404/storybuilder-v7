@@ -53,7 +53,22 @@ You must mathematically toggle the Master Levers in the JSON payload based on th
 - If Hard Magic/Sci-Fi: Populate the universal_laws_ledger with unbreakable rules.
 - If Absurdist/Chaotic (e.g. Chainsaw Man): Set desire_inversion_active = true for the protagonist.
 - If Time Loop: Output temporal_iteration_mode = true in level_1_5_saga.
-Failure to pull the correct master levers will result in a fatal architectural mismatch.`;
+Failure to pull the correct master levers will result in a fatal architectural mismatch.
+
+=== MANUAL-ALIVE CLUSTER INSTRUCTIONS ===
+You must configure the following advanced dramatic levers per-premise based on genre and tone reasoning. CRITICAL: NEVER overwrite these levers if their corresponding hybrid_locks are active (e.g., level_1_sliders, level_1_dialectic, level_3_actors).
+- level_4_vector_engine.prose_economy_scalar (0-10): Set LOW (<4) for stark, thriller, or minimalist stories; higher for lush/baroque.
+- level_4_vector_engine.pov_anchor: Set to a specific character's name for intimate/single-POV premises; use 'Omniscient Objective' ONLY for true ensemble premises.
+- level_4_vector_engine.the_dilemma_gate: Set active=true and define a concrete current_dilemma (lose-lose situation) for tragic or political dramas.
+- level_4_vector_engine.narrative_perspective_variance: Raise variance_level (>5) for unreliable-narrator or surreal premises.
+- level_4_vector_engine.causality_linkage_valve.enforce_therefore_but: Set true for tightly plotted hard-causal dramas (e.g., Game of Thrones, Fullmetal Alchemist).
+- level_1_5_saga.global_faction_matrix: Populate with factions and asset_power for epic/political premises (the faction-leverage engine). Leave empty for intimate premises.
+- level_1_5_saga.geographical_context_demultiplexer.convergence_override_active and level_1_5_saga.rumor_propagation_queue: Set when the premise implies multi-lane storylines that periodically collide.
+- level_2_5_thematic_bridge.thematic_mirroring: Enable (is_active=true, set influence_factor and sync_mode) for atmospheric/literary premises where the environment must mirror internal state.
+- level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame: Set directly from the sampled ending coordinate tone, do NOT invent freely.
+
+=== DIALECTIC DISTRIBUTION ===
+Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1_kernel.dialectic_matrix. You must stagger their "Lie" (false belief). This means one cast, one argument, multiple stances. Do NOT create parallel solo arcs. This creates the renewable-conflict structure needed for a 50-100 episode saga.\`;
 
     if (world_scale && world_scale !== "AI Default") {
       systemPrompt += `\n\nUSER OVERRIDE: You MUST set the world_scale to "${world_scale}" and explicitly adjust the story scope, location ledger, and plot devices to match this exact scale.`;
@@ -149,9 +164,24 @@ Failure to pull the correct master levers will result in a fatal architectural m
                 },
                 required: ["secret_id", "description", "known_by", "ignorant"]
               }
+            },
+            global_faction_matrix: {
+              type: SchemaType.OBJECT,
+              description: "Factions with asset_power for epic/political premises."
+            },
+            geographical_context_demultiplexer: {
+              type: SchemaType.OBJECT,
+              properties: {
+                convergence_override_active: { type: SchemaType.BOOLEAN }
+              },
+              required: ["convergence_override_active"]
+            },
+            rumor_propagation_queue: {
+              type: SchemaType.ARRAY,
+              items: { type: SchemaType.STRING }
             }
           },
-          required: ["temporal_iteration_mode", "epistemic_ledger"]
+          required: ["temporal_iteration_mode", "epistemic_ledger", "global_faction_matrix", "geographical_context_demultiplexer", "rumor_propagation_queue"]
         },
         level_2_domain: {
           type: SchemaType.OBJECT,
@@ -236,6 +266,21 @@ Failure to pull the correct master levers will result in a fatal architectural m
             }
           },
           required: ["dictionary_cascade", "universal_laws_ledger", "hegemony_node", "active_viewport_box", "worldbuilding_reasoning", "location_ledger", "environmental_props", "chekhov_vault_ledger"]
+        },
+        level_2_5_thematic_bridge: {
+          type: SchemaType.OBJECT,
+          properties: {
+            thematic_mirroring: {
+              type: SchemaType.OBJECT,
+              properties: {
+                is_active: { type: SchemaType.BOOLEAN },
+                influence_factor: { type: SchemaType.NUMBER },
+                sync_mode: { type: SchemaType.STRING, description: "passive | aggressive | dissonant" }
+              },
+              required: ["is_active", "influence_factor", "sync_mode"]
+            }
+          },
+          required: ["thematic_mirroring"]
         },
         level_3_actor_cards: {
           type: SchemaType.OBJECT,
@@ -329,12 +374,51 @@ Failure to pull the correct master levers will result in a fatal architectural m
         level_4_vector_engine: {
           type: SchemaType.OBJECT,
           properties: {
-            atmospheric_ma_override: { type: SchemaType.BOOLEAN }
+            atmospheric_ma_override: { type: SchemaType.BOOLEAN },
+            prose_economy_scalar: { type: SchemaType.NUMBER },
+            pov_anchor: { type: SchemaType.STRING },
+            the_dilemma_gate: {
+              type: SchemaType.OBJECT,
+              properties: {
+                active: { type: SchemaType.BOOLEAN },
+                current_dilemma: { type: SchemaType.STRING }
+              },
+              required: ["active", "current_dilemma"]
+            },
+            narrative_perspective_variance: {
+              type: SchemaType.OBJECT,
+              properties: {
+                variance_level: { type: SchemaType.NUMBER },
+                perception_filter: { type: SchemaType.STRING }
+              },
+              required: ["variance_level", "perception_filter"]
+            },
+            causality_linkage_valve: {
+              type: SchemaType.OBJECT,
+              properties: {
+                enforce_therefore_but: { type: SchemaType.BOOLEAN },
+                prohibit_and_then: { type: SchemaType.BOOLEAN }
+              },
+              required: ["enforce_therefore_but", "prohibit_and_then"]
+            }
           },
-          required: ["atmospheric_ma_override"]
+          required: ["atmospheric_ma_override", "prose_economy_scalar", "pov_anchor", "the_dilemma_gate", "narrative_perspective_variance", "causality_linkage_valve"]
+        },
+        level_5_narrative_echo_matrix: {
+          type: SchemaType.OBJECT,
+          properties: {
+            synthesis_validator: {
+              type: SchemaType.OBJECT,
+              properties: {
+                structural_resolution_frame: { type: SchemaType.STRING }
+              },
+              required: ["structural_resolution_frame"]
+            }
+          },
+          required: ["synthesis_validator"]
         }
       },
-      required: ["level_1_kernel", "level_1_5_saga", "level_2_domain", "level_3_actor_cards", "level_4_vector_engine"]
+      required: ["level_1_kernel", "level_1_5_saga", "level_2_domain", "level_2_5_thematic_bridge", "level_3_actor_cards", "level_4_vector_engine", "level_5_narrative_echo_matrix"]
     };
 
     // Initialize Gemini
