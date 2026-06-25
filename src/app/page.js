@@ -42,6 +42,19 @@ export default function ControlRoom() {
   const [minEpisodes, setMinEpisodes] = useState(10);
   const [maxEpisodes, setMaxEpisodes] = useState(20);
   const [preFlightEntropy, setPreFlightEntropy] = useState(5);
+  const [engineCapacity, setEngineCapacity] = useState(50);
+
+  const handleCapacityChange = (val) => {
+    setEngineCapacity(val);
+    if (val === 0) {
+      updateKernel({ user_agency_regulator: 'automated' });
+      updateHybridLocks({ level_1_sliders: false, level_1_dialectic: false, level_3_actors: false });
+    } else if (val === 50) {
+      updateKernel({ user_agency_regulator: 'hybrid' });
+    } else if (val === 100) {
+      updateKernel({ user_agency_regulator: 'manual' });
+    }
+  };
   
   // Archival System State
   const [isSaving, setIsSaving] = useState(false);
@@ -677,6 +690,11 @@ export default function ControlRoom() {
           } else {
             setGeneratedText(`Max retries reached. Final Draft:\n\n${result}`);
           }
+          
+          if (engineCapacity === 0 || loopState.level_1_kernel?.user_agency_regulator === 'automated') {
+            // Auto-advance
+            await handleAdvanceTimeline(result, loopState);
+          }
           break;
         } else {
           // Failed. Prepare Rewrite.
@@ -763,35 +781,44 @@ export default function ControlRoom() {
     }
   };
 
-  const handleAdvanceTimeline = async () => {
-    if (!generatedText) return;
+  const handleAdvanceTimeline = async (overrideGeneratedText = null, overrideState = null) => {
+    const activeText = overrideGeneratedText || generatedText;
+    if (!activeText) return;
     setDirectorsNotes(null);
     setShowReviewPanel(false);
 
+    const currentState = overrideState ? overrideState : state.current_state;
+    const currentSaga = currentState.level_1_5_saga;
+    const currentKernel = currentState.level_1_kernel;
+
     // Detect if any "Teased" plot devices are ready to be resolved
-    const currentVaultLedger = state.current_state.level_4_vector_engine?.chekhov_vault_ledger || [];
+    const currentVaultLedger = currentState.level_4_vector_engine?.chekhov_vault_ledger || [];
     const nextVaultLedger = currentVaultLedger.map(item => {
-      if (item.causal_status === "Teased" && saga.current_saga_index === item.resolution_episode) {
+      if (item.causal_status === "Teased" && currentSaga.current_saga_index === item.resolution_episode) {
         return { ...item, causal_status: "Resolved" };
       }
       return item;
     });
 
-    const nextEpisodeIndex = saga.current_saga_index + 1;
-    const targetEpisodes = kernel.target_episode_count || 0;
-    const isEpilogue = kernel.progression_termination_mode === "fixed_grids" && nextEpisodeIndex >= targetEpisodes;
+    const nextEpisodeIndex = currentSaga.current_saga_index + 1;
+    const targetEpisodes = currentKernel.target_episode_count || 0;
+    const isEpilogue = currentKernel.progression_termination_mode === "fixed_grids" && nextEpisodeIndex >= targetEpisodes;
 
     updateState({
       level_4_vector_engine: {
-        ...state.current_state.level_4_vector_engine,
+        ...currentState.level_4_vector_engine,
         chekhov_vault_ledger: nextVaultLedger
       },
       level_1_5_saga: {
-        ...saga,
+        ...currentSaga,
         current_saga_index: nextEpisodeIndex,
         is_epilogue_phase: isEpilogue,
-        episode_history: [...(saga.episode_history || []), generatedText],
-        immediate_synopsis: ""
+        episode_history: [...(currentSaga.episode_history || []), activeText],
+        immediate_synopsis: "",
+        saga_progression_rail: [
+          ...(currentSaga.saga_progression_rail || []),
+          { episode: currentSaga.current_saga_index, capacity: engineCapacity }
+        ]
       }
     });
     setGeneratedText("");
@@ -1038,6 +1065,30 @@ export default function ControlRoom() {
                         onChange={(e) => setPreFlightEntropy(parseInt(e.target.value) || 0)}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
                       />
+                    </div>
+                    
+                    {/* Capacity Dial */}
+                    <div className="flex flex-col space-y-2 pt-2 border-t border-indigo-500/10">
+                      <div className="flex justify-between items-center">
+                        <label className="text-xs font-medium text-zinc-400" title="Controls Unattended vs Hands-On generation.">Engine Capacity Preset</label>
+                        <span className="text-indigo-400 font-mono text-xs">
+                          {engineCapacity === 0 ? "0 (Unattended)" : engineCapacity === 50 ? "50 (Collaborative)" : "100 (Authored)"}
+                        </span>
+                      </div>
+                      <input 
+                        type="range" 
+                        min="0"
+                        max="100"
+                        step="50"
+                        value={engineCapacity}
+                        onChange={(e) => handleCapacityChange(parseInt(e.target.value) || 0)}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-indigo-500"
+                      />
+                      <div className="flex justify-between text-[10px] text-zinc-500">
+                        <span>Unattended (0)</span>
+                        <span>Collaborative (50)</span>
+                        <span>Authored (100)</span>
+                      </div>
                     </div>
                   </div>
 
