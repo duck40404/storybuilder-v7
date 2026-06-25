@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { global_state, mode, custom_notes, use_director_critique, director_critique } = body;
+    const { global_state, mode, custom_notes, use_director_critique, director_critique, previous_episode_text, cumulative_synopsis } = body;
 
     console.log("=== PREPARE SCENE INITIATED ===");
     console.log("Mode:", mode);
@@ -32,13 +32,23 @@ export async function POST(request) {
     }
 
     systemPrompt += `=== CURRENT GLOBAL STATE ===\n${JSON.stringify(global_state, null, 2)}\n\n`;
+    
+    if (previous_episode_text) {
+      systemPrompt += `=== PREVIOUS EPISODE TEXT ===\n${previous_episode_text}\n\n`;
+    }
+    if (cumulative_synopsis) {
+      systemPrompt += `=== CUMULATIVE SYNOPSIS ===\n${cumulative_synopsis}\n\n`;
+    }
+
     systemPrompt += `=== v7.14 ENTROPY DETOX: THE NOVELTY CHECK & STRUCTURAL CEILING ===\n`;
-    systemPrompt += `Before rendering, you must compare the proposed story structure against the Previous_Story_Log. If the Climax-Resolution geometry (The 'Snap-Break-Exit' sequence) has been used recently, you MUST force a 'Structural Pivot'. You are required to explicitly justify this in the state_change_report. Furthermore, conflicts MUST be fundamentally asymmetrical (e.g., social manipulation, escaping a localized threat, scavenging for survival). The magical "reset" explosion is permanently banned. The resolution cannot be a sudden environment-clearing flash of light.\n\n`;
+    systemPrompt += `Before rendering, you must compare the proposed story structure against the PREVIOUS EPISODE TEXT and CUMULATIVE SYNOPSIS provided above. If the Climax-Resolution geometry (The 'Snap-Break-Exit' sequence) has been used recently, you MUST force a 'Structural Pivot'. You are required to explicitly justify this in the state_change_report. Furthermore, conflicts MUST be fundamentally asymmetrical (e.g., social manipulation, escaping a localized threat, scavenging for survival). The magical "reset" explosion is permanently banned. The resolution cannot be a sudden environment-clearing flash of light.\n\n`;
     systemPrompt += `=== v7.10 METAPHOR QUARANTINE (DOMAIN-LOCKED LEXICON) ===\n`;
     systemPrompt += `You must actively analyze the current level_2_domain (Setting). You are strictly forbidden from using generic metaphysical metaphors like 'void', 'obsidian', 'snapping threads', or 'thin ice'. You must generate a lexicon_mandate defining exactly what physical/environmental textures the engine is allowed to use for metaphorical language based ONLY on the current setting (e.g., if on a train, metaphors must be industrial/steam-based).\n\n`;
     systemPrompt += `=== v7.11 ACTIVE BYSTANDER PROTOCOL ===\n`;
     systemPrompt += `Secondary characters cannot simply stand and react. Every character you include in the scene MUST be assigned a physical task, a conflicting goal, or an interaction with a prop. You must explicitly declare what each secondary character is physically doing in the secondary_character_agency field of the state_change_report.\n\n`;
-    systemPrompt += `Based on the instructions and the current state, output an updated JSON state containing level_1_kernel, level_2_domain, level_3_actor_cards, and a state_change_report. Retain any data that shouldn't change. You MUST output a complete, valid JSON object matching the exact schema provided.`;
+    systemPrompt += `=== ARRAY OVERWRITE CONTRACT ===\n`;
+    systemPrompt += `CRITICAL: Any array you return (like epistemic_ledger, rumor_propagation_queue, chekhov_vault_ledger, etc.) will WHOLESALE OVERWRITE the existing array. You MUST return the COMPLETE array with all previous items preserved (plus your changes/additions), NEVER just a delta. If you return a partial array, existing ledgers will be silently truncated.\n\n`;
+    systemPrompt += `Based on the instructions and the current state, output an updated JSON state containing level_1_kernel, level_1_5_saga, level_2_domain, level_3_actor_cards, level_4_vector_engine, and a state_change_report. Retain any data that shouldn't change. You MUST output a complete, valid JSON object matching the exact schema provided.`;
 
     const configSchema = {
       type: SchemaType.OBJECT,
@@ -65,6 +75,29 @@ export async function POST(request) {
             }
           },
           required: ["narrative_entropy_index", "user_agency_regulator", "progression_termination_mode", "target_episode_count", "scope_valve", "protagonist_distribution_mode", "structural_rhythm_preset", "ending_payload_controller", "dialectic_matrix"]
+        },
+        level_1_5_saga: {
+          type: SchemaType.OBJECT,
+          properties: {
+            epistemic_ledger: {
+              type: SchemaType.ARRAY,
+              items: {
+                type: SchemaType.OBJECT,
+                properties: {
+                  secret_id: { type: SchemaType.STRING },
+                  description: { type: SchemaType.STRING },
+                  known_by: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } },
+                  ignorant: { type: SchemaType.ARRAY, items: { type: SchemaType.STRING } }
+                },
+                required: ["secret_id", "description", "known_by", "ignorant"]
+              }
+            },
+            rumor_propagation_queue: {
+              type: SchemaType.ARRAY,
+              items: { type: SchemaType.STRING }
+            }
+          },
+          required: ["epistemic_ledger", "rumor_propagation_queue"]
         },
         level_2_domain: {
           type: SchemaType.OBJECT,
@@ -115,25 +148,9 @@ export async function POST(request) {
                 },
                 required: ["prop_name", "description"]
               }
-            },
-            chekhov_vault_ledger: { 
-              type: SchemaType.ARRAY, 
-              items: { 
-                type: SchemaType.OBJECT, 
-                properties: { 
-                  id: { type: SchemaType.STRING }, 
-                  description: { type: SchemaType.STRING }, 
-                  narrative_classification: { type: SchemaType.STRING },
-                  force_payoff: { type: SchemaType.BOOLEAN }, 
-                  locked: { type: SchemaType.BOOLEAN },
-                  causal_status: { type: SchemaType.STRING, description: "Unresolved | Teased | Resolved" },
-                  resolution_episode: { type: SchemaType.INTEGER }
-                },
-                required: ["id", "description", "narrative_classification", "force_payoff", "locked", "causal_status", "resolution_episode"]
-              }
             }
           },
-          required: ["dictionary_cascade", "hegemony_node", "active_viewport_box", "worldbuilding_reasoning", "location_ledger", "environmental_props", "chekhov_vault_ledger"]
+          required: ["dictionary_cascade", "hegemony_node", "active_viewport_box", "worldbuilding_reasoning", "location_ledger", "environmental_props"]
         },
         level_3_actor_cards: {
           type: SchemaType.OBJECT,
@@ -235,9 +252,31 @@ export async function POST(request) {
             kinetic_struggle_check: { type: SchemaType.STRING, description: "Explicit statement of the physical pushback, environmental friction, or stamina drain the protagonist faces in the climax." }
           },
           required: ["novelty_check", "character_agency", "resolution_earned", "visual_evidence", "lexicon_mandate", "secondary_character_agency", "kinetic_struggle_check"]
+        },
+        level_4_vector_engine: {
+          type: SchemaType.OBJECT,
+          properties: {
+            chekhov_vault_ledger: { 
+              type: SchemaType.ARRAY, 
+              items: { 
+                type: SchemaType.OBJECT, 
+                properties: { 
+                  id: { type: SchemaType.STRING }, 
+                  description: { type: SchemaType.STRING }, 
+                  narrative_classification: { type: SchemaType.STRING },
+                  force_payoff: { type: SchemaType.BOOLEAN }, 
+                  locked: { type: SchemaType.BOOLEAN },
+                  causal_status: { type: SchemaType.STRING, description: "Unresolved | Teased | Resolved" },
+                  resolution_episode: { type: SchemaType.INTEGER }
+                },
+                required: ["id", "description", "narrative_classification", "force_payoff", "locked", "causal_status", "resolution_episode"]
+              }
+            }
+          },
+          required: ["chekhov_vault_ledger"]
         }
       },
-      required: ["level_1_kernel", "level_2_domain", "level_3_actor_cards", "state_change_report"]
+      required: ["level_1_kernel", "level_1_5_saga", "level_2_domain", "level_3_actor_cards", "level_4_vector_engine", "state_change_report"]
     };
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -256,7 +295,94 @@ export async function POST(request) {
     const responseText = result.response.text();
     const data = JSON.parse(responseText);
 
-    return NextResponse.json({ success: true, ...data });
+    // --- DEEP MERGE PATCH ONTO GLOBAL STATE ---
+    const deepMerge = (target, source) => {
+      if (typeof target !== 'object' || target === null) return source;
+      if (typeof source !== 'object' || source === null) return source;
+      
+      if (Array.isArray(source)) {
+        return source; 
+      }
+
+      const output = { ...target };
+      for (const key of Object.keys(source)) {
+        if (source[key] instanceof Object && !Array.isArray(source[key])) {
+          output[key] = deepMerge(target[key] || {}, source[key]);
+        } else {
+          output[key] = source[key];
+        }
+      }
+      return output;
+    };
+
+    // We only merge the levels the LLM is allowed to touch back into a composite object
+    const finalState = {
+      level_1_kernel: deepMerge(global_state.level_1_kernel, data.level_1_kernel),
+      level_1_5_saga: deepMerge(global_state.level_1_5_saga, data.level_1_5_saga),
+      level_2_domain: deepMerge(global_state.level_2_domain, data.level_2_domain),
+      level_3_actor_cards: deepMerge(global_state.level_3_actor_cards, data.level_3_actor_cards),
+      level_4_vector_engine: deepMerge(global_state.level_4_vector_engine, data.level_4_vector_engine),
+      state_change_report: data.state_change_report
+    };
+
+    // --- FROZEN CORE RESTORATION (SILENT OVERWRITE) ---
+    if (finalState.level_1_kernel && finalState.level_1_kernel.dialectic_matrix) {
+      if (JSON.stringify(finalState.level_1_kernel.dialectic_matrix) !== JSON.stringify(global_state.level_1_kernel.dialectic_matrix)) {
+        console.warn("Frozen Core Violation: AI attempted to modify level_1_kernel.dialectic_matrix. Restoring original.");
+        finalState.level_1_kernel.dialectic_matrix = global_state.level_1_kernel.dialectic_matrix;
+      }
+    }
+
+    if (finalState.level_3_actor_cards && finalState.level_3_actor_cards.pov_characters) {
+      const origPovs = global_state.level_3_actor_cards.pov_characters;
+      const genPovs = finalState.level_3_actor_cards.pov_characters;
+      
+      const isOrigObj = !Array.isArray(origPovs);
+      
+      if (Array.isArray(genPovs)) {
+        genPovs.forEach(genActor => {
+          const charId = genActor.character_id;
+          if (!charId) return;
+          
+          let origActor = isOrigObj ? origPovs[charId] : origPovs.find(a => a.character_id === charId);
+          
+          if (origActor) {
+            if (genActor.the_shield !== origActor.the_shield) {
+              console.warn(`Frozen Core Violation: AI attempted to modify the_shield for ${charId}. Restoring original.`);
+              genActor.the_shield = origActor.the_shield;
+            }
+            if (JSON.stringify(genActor.the_blueprint) !== JSON.stringify(origActor.the_blueprint)) {
+              console.warn(`Frozen Core Violation: AI attempted to modify the_blueprint for ${charId}. Restoring original.`);
+              genActor.the_blueprint = origActor.the_blueprint;
+            }
+          }
+        });
+      } else {
+        // If genPovs became an object through some weird merge, handle it (though deepMerge overwrites arrays)
+        Object.values(genPovs).forEach(genActor => {
+          const charId = genActor.character_id;
+          if (!charId) return;
+          let origActor = isOrigObj ? origPovs[charId] : origPovs.find(a => a.character_id === charId);
+          if (origActor) {
+            if (genActor.the_shield !== origActor.the_shield) {
+              console.warn(`Frozen Core Violation: AI attempted to modify the_shield for ${charId}. Restoring original.`);
+              genActor.the_shield = origActor.the_shield;
+            }
+            if (JSON.stringify(genActor.the_blueprint) !== JSON.stringify(origActor.the_blueprint)) {
+              console.warn(`Frozen Core Violation: AI attempted to modify the_blueprint for ${charId}. Restoring original.`);
+              genActor.the_blueprint = origActor.the_blueprint;
+            }
+          }
+        });
+      }
+    }
+
+    // Force-restore current_saga_index to protect the deterministic counter
+    if (finalState.level_1_5_saga) {
+      finalState.level_1_5_saga.current_saga_index = global_state.level_1_5_saga.current_saga_index;
+    }
+
+    return NextResponse.json({ success: true, ...finalState });
   } catch (error) {
     console.error("Preparation error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });

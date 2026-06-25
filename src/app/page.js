@@ -48,6 +48,25 @@ export default function ControlRoom() {
   const [showLoadDropdown, setShowLoadDropdown] = useState(false);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
 
+  const transformActorArraysToObjects = (actorCards) => {
+    if (!actorCards) return actorCards;
+    const transform = (input) => {
+      if (!Array.isArray(input)) return input;
+      const obj = {};
+      input.forEach(actor => {
+        if (actor.character_id) {
+          obj[actor.character_id] = actor;
+        }
+      });
+      return obj;
+    };
+    return {
+      ...actorCards,
+      pov_characters: transform(actorCards.pov_characters),
+      proxy_npcs: transform(actorCards.proxy_npcs)
+    };
+  };
+
   if (!state || !state.current_state) {
     return <div className="min-h-screen bg-black flex items-center justify-center text-zinc-400 animate-pulse">Initializing Engine...</div>;
   }
@@ -366,34 +385,12 @@ export default function ControlRoom() {
 
       // Merge Level 3 Actor Cards
       if (generatedSettings.level_3_actor_cards && !hybridLocks.level_3_actors) {
-        let newPovs = generatedSettings.level_3_actor_cards.pov_characters || [];
-        let newNpcs = generatedSettings.level_3_actor_cards.proxy_npcs || [];
-        
-        // Transform array to object if necessary
-        if (Array.isArray(newPovs)) {
-          const ledgerObj = {};
-          newPovs.forEach(actor => {
-            if (actor.character_id) {
-              ledgerObj[actor.character_id] = actor;
-            }
-          });
-          newPovs = ledgerObj;
-        }
-        if (Array.isArray(newNpcs)) {
-          const ledgerObj = {};
-          newNpcs.forEach(actor => {
-            if (actor.character_id) {
-              ledgerObj[actor.character_id] = actor;
-            }
-          });
-          newNpcs = ledgerObj;
-        }
-
+        const transformedCards = transformActorArraysToObjects(generatedSettings.level_3_actor_cards);
         nextState.level_3_actor_cards = {
           ...nextState.level_3_actor_cards,
-          symbiotic_links: generatedSettings.level_3_actor_cards.symbiotic_links || [],
-          pov_characters: newPovs,
-          proxy_npcs: newNpcs
+          symbiotic_links: transformedCards.symbiotic_links || [],
+          pov_characters: transformedCards.pov_characters || {},
+          proxy_npcs: transformedCards.proxy_npcs || {}
         };
       }
 
@@ -489,7 +486,7 @@ export default function ControlRoom() {
     score = Math.max(0, Math.min(10, score));
     score = Math.round(score);
     
-    const char = actors.directory_ledger[id];
+    const char = actors.pov_characters?.[id] || actors.proxy_npcs?.[id];
     if (char) {
       const currentProfile = char.kinesic_profile || { morality_empathy: 5, action_bias: 5, emotional_armor: 5, thematic_alignment: 5, verbal_density: 0 };
       updateCharacter(id, {
@@ -526,7 +523,9 @@ export default function ControlRoom() {
           mode: 'SEQUEL_MODE',
           custom_notes: customNotes,
           use_director_critique: useDirectorCritique,
-          director_critique: directorsNotes
+          director_critique: directorsNotes,
+          previous_episode_text: generatedText,
+          cumulative_synopsis: parsedState.current_state.level_1_5_saga.cumulative_synopsis
         })
       });
       
@@ -535,8 +534,10 @@ export default function ControlRoom() {
       
       updateState({
         level_1_kernel: data.level_1_kernel, 
+        level_1_5_saga: data.level_1_5_saga,
         level_2_domain: data.level_2_domain, 
-        level_3_actor_cards: data.level_3_actor_cards
+        level_3_actor_cards: transformActorArraysToObjects(data.level_3_actor_cards),
+        level_4_vector_engine: data.level_4_vector_engine
       });
       setStateChangeReport(data.state_change_report || null);
       setGeneratedText("State Prepared. Please review the updated sliders and settings, then click Compile Episode.");
@@ -567,7 +568,9 @@ export default function ControlRoom() {
           mode: 'REWRITE_MODE',
           custom_notes: customNotes,
           use_director_critique: useDirectorCritique,
-          director_critique: { critique: directorsNotes?.critique, recommended_slider_adjustments: rewriteSliders }
+          director_critique: { critique: directorsNotes?.critique, recommended_slider_adjustments: rewriteSliders },
+          previous_episode_text: generatedText,
+          cumulative_synopsis: parsedState.current_state.level_1_5_saga.cumulative_synopsis
         })
       });
       
@@ -576,8 +579,10 @@ export default function ControlRoom() {
       
       updateState({
         level_1_kernel: data.level_1_kernel, 
+        level_1_5_saga: data.level_1_5_saga,
         level_2_domain: data.level_2_domain, 
-        level_3_actor_cards: data.level_3_actor_cards
+        level_3_actor_cards: transformActorArraysToObjects(data.level_3_actor_cards),
+        level_4_vector_engine: data.level_4_vector_engine
       });
       setStateChangeReport(data.state_change_report || null);
       setGeneratedText("Rewrite State Prepared. Please review the updated sliders and settings, then click Compile Episode.");
@@ -677,7 +682,9 @@ export default function ControlRoom() {
                 mode: 'REWRITE_MODE',
                 custom_notes: customNotes,
                 use_director_critique: true,
-                director_critique: { critique: evalData.critique, recommended_slider_adjustments: currentRewriteSliders }
+                director_critique: { critique: evalData.critique, recommended_slider_adjustments: currentRewriteSliders },
+                previous_episode_text: finalResultText || generatedText,
+                cumulative_synopsis: loopState.level_1_5_saga.cumulative_synopsis
               })
             });
             const prepData = await prepResponse.json();
@@ -686,16 +693,20 @@ export default function ControlRoom() {
             loopState = {
               ...loopState,
               level_1_kernel: prepData.level_1_kernel,
+              level_1_5_saga: prepData.level_1_5_saga,
               level_2_domain: prepData.level_2_domain,
-              level_3_actor_cards: prepData.level_3_actor_cards
+              level_3_actor_cards: transformActorArraysToObjects(prepData.level_3_actor_cards),
+              level_4_vector_engine: prepData.level_4_vector_engine
             };
             loopStateChangeReport = prepData.state_change_report || null;
             setStateChangeReport(loopStateChangeReport);
             
             updateState({
               level_1_kernel: prepData.level_1_kernel, 
+              level_1_5_saga: prepData.level_1_5_saga,
               level_2_domain: prepData.level_2_domain, 
-              level_3_actor_cards: prepData.level_3_actor_cards
+              level_3_actor_cards: transformActorArraysToObjects(prepData.level_3_actor_cards),
+              level_4_vector_engine: prepData.level_4_vector_engine
             });
             
           } catch (err) {
@@ -1695,12 +1706,12 @@ export default function ControlRoom() {
                   <div className="flex items-center justify-between">
                     <label className="block text-sm font-medium text-zinc-400">Atmospheric 'Ma' Override</label>
                     <button
-                      onClick={() => updateDomain({ atmospheric_ma_override: !domain.atmospheric_ma_override })}
+                      onClick={() => updateEngine({ atmospheric_ma_override: !engine.atmospheric_ma_override })}
                       className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                        domain.atmospheric_ma_override ? 'bg-emerald-500' : 'bg-zinc-700'
+                        engine.atmospheric_ma_override ? 'bg-emerald-500' : 'bg-zinc-700'
                       }`}
                     >
-                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${domain.atmospheric_ma_override ? 'translate-x-6' : 'translate-x-1'}`} />
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${engine.atmospheric_ma_override ? 'translate-x-6' : 'translate-x-1'}`} />
                     </button>
                   </div>
                   <p className="text-xs text-zinc-500">Studio Ghibli Mode: Prioritizes negative space, environmental focus, and silent pacing.</p>
@@ -1738,6 +1749,18 @@ export default function ControlRoom() {
               Thematic Mirroring controllers.
             </p>
           </header>
+
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              onClick={() => updateBridge({ is_active: !bridge.thematic_mirroring.is_active })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                bridge.thematic_mirroring.is_active ? 'bg-cyan-500' : 'bg-zinc-700'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${bridge.thematic_mirroring.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            <span className="text-zinc-300 text-sm font-medium">Thematic Mirroring Active</span>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-4">

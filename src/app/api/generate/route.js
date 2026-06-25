@@ -84,8 +84,13 @@ export async function POST(request) {
       systemPrompt += `\n`;
     }
 
-    if (kernel?.dialogue_density_slider !== undefined) {
-      systemPrompt += `- DIALOGUE DENSITY: The user has set the Dialogue Density to ${kernel.dialogue_density_slider} out of 10. If this is 0, write purely visual, atmospheric prose with zero spoken dialogue. If it is 10, rely heavily on conversation.\n`;
+    if (kernel?.dialectic_matrix) {
+      systemPrompt += `\n=== CORE DIALECTIC ===\n`;
+      systemPrompt += `You must treat this episode as a move in an ongoing philosophical argument.\n`;
+      systemPrompt += `- Thesis: ${kernel.dialectic_matrix.core_claim}\n`;
+      systemPrompt += `- Antithesis: ${kernel.dialectic_matrix.counter_claim}\n`;
+      systemPrompt += `- Current Thematic Status: ${kernel.dialectic_matrix.thematic_status_node}\n`;
+      systemPrompt += `Structure the conflict around this argument. Decide which characters embody which pole, and ensure the scene's resolution organically tilts the story towards thesis, antithesis, or synthesis.\n\n`;
     }
 
     if (bridge?.thematic_mirroring?.is_active) {
@@ -219,7 +224,7 @@ export async function POST(request) {
       systemPrompt += `Adhere to the prose_economy_scalar. If it is low (<4), you are strictly forbidden from using compound adjectives or "purple" descriptions. Do not describe the air as "seething, chromatic chaos." Trust your verbs. Use stark, physical reality. A cold room is just a cold room.\n\n`;
     }
 
-    const requiredWordCount = engine?.pacing_density_multiplier?.required_word_count_per_episode || 700;
+    const requiredWordCount = engine?.pacing_density_multiplier?.required_word_count || 700;
     systemPrompt += `\n=== LENGTH & PACING CONSTRAINT ===\n`;
     systemPrompt += `MINIMUM LENGTH RULE: You must generate a MINIMUM of ${requiredWordCount} words for this sequence. Expand the structural beats, environmental descriptions, and action sequences to hit this minimum volume. Do not use summary shorthand.\n`;
     systemPrompt += `MAXIMUM LENGTH RULE: There is NO maximum word count limit. You are authorized to write as much as necessary to organically complete the scene logic. Do not arbitrarily compress or artificially end the scene early.\n\n`;
