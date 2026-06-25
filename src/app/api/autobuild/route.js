@@ -68,7 +68,7 @@ You must configure the following advanced dramatic levers per-premise based on g
 - level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame: Set directly from the sampled ending coordinate tone, do NOT invent freely.
 
 === DIALECTIC DISTRIBUTION ===
-Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1_kernel.dialectic_matrix. You must stagger their "Lie" (false belief). This means one cast, one argument, multiple stances. Do NOT create parallel solo arcs. This creates the renewable-conflict structure needed for a 50-100 episode saga.\`;
+Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1_kernel.dialectic_matrix. You must stagger their "Lie" (false belief). This means one cast, one argument, multiple stances. Do NOT create parallel solo arcs. This creates the renewable-conflict structure needed for a 50-100 episode saga.`;
 
     if (world_scale && world_scale !== "AI Default") {
       systemPrompt += `\n\nUSER OVERRIDE: You MUST set the world_scale to "${world_scale}" and explicitly adjust the story scope, location ledger, and plot devices to match this exact scale.`;
