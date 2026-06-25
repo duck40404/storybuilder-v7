@@ -71,43 +71,43 @@ You must configure the following advanced dramatic levers per-premise based on g
 - level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame: Set directly from the sampled ending coordinate tone, do NOT invent freely.
 
 === DIALECTIC DISTRIBUTION ===
-Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1_kernel.dialectic_matrix. You must stagger their "Lie" (false belief). This means one cast, one argument, multiple stances. Do NOT create parallel solo arcs. This creates the renewable-conflict structure needed for a 50-100 episode saga.`;
+Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1_kernel.dialectic_matrix. You must stagger their "Lie" (false belief). This means one cast, one argument, multiple stances. Do NOT create parallel solo arcs. This creates the renewable-conflict structure needed for a 50-100 episode saga.\`;
 
     if (world_scale && world_scale !== "AI Default") {
-      systemPrompt += `\n\nUSER OVERRIDE: You MUST set the world_scale to "${world_scale}" and explicitly adjust the story scope, location ledger, and plot devices to match this exact scale.`;
+      systemPrompt += "\n\nUSER OVERRIDE: You MUST set the world_scale to \"" + world_scale + "\" and explicitly adjust the story scope, location ledger, and plot devices to match this exact scale.";
     }
     
     if (complexity && complexity !== "AI Default") {
-      systemPrompt += `\n\nUSER OVERRIDE: You MUST design the narrative with a "${complexity}" complexity level.`;
-      if (complexity === "extreme") systemPrompt += ` Generate an extremely complex web of interwoven plots, massive character rosters across the POV and NPC arrays, and intense political or philosophical friction matrices.`;
-      if (complexity === "low") systemPrompt += ` Generate a very straightforward, linear story with a tight focus, very few characters, and simple, direct character motivations.`;
+      systemPrompt += "\n\nUSER OVERRIDE: You MUST design the narrative with a \"" + complexity + "\" complexity level.";
+      if (complexity === "extreme") systemPrompt += " Generate an extremely complex web of interwoven plots, massive character rosters across the POV and NPC arrays, and intense political or philosophical friction matrices.";
+      if (complexity === "low") systemPrompt += " Generate a very straightforward, linear story with a tight focus, very few characters, and simple, direct character motivations.";
     }
 
     if (fingerprint) {
-      systemPrompt += `\n\n=== STRUCTURAL NOVELTY COORDINATES ===\n`;
-      systemPrompt += `You MUST strictly BIND level_1_kernel.dialectic_matrix to the following dialectic family: ${fingerprint.dialectic_family}\n`;
-      systemPrompt += `You MUST strictly BIND level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame to the following ending mode: ${fingerprint.ending_mode}\n`;
+      systemPrompt += "\n\n=== STRUCTURAL NOVELTY COORDINATES ===\n";
+      systemPrompt += "You MUST strictly BIND level_1_kernel.dialectic_matrix to the following dialectic family: " + fingerprint.dialectic_family + "\n";
+      systemPrompt += "You MUST strictly BIND level_5_narrative_echo_matrix.synthesis_validator.structural_resolution_frame to the following ending mode: " + fingerprint.ending_mode + "\n";
     }
 
     if (!raw_spark_text || raw_spark_text.trim() === "") {
-      systemPrompt += `\n\nThe user has provided NO premise. You have absolute creative freedom. You must invent a brilliant, highly original story premise from scratch. Include this invented premise in the generated_spark field. Then, generate all the Level 1, 2, and 3 settings to perfectly match your new premise. You MUST provide an estimated episode counter in the target_episode_count field based organically on the scale of your invented story (e.g., 1 for a short film, 10 for a mini-series).`;
+      systemPrompt += "\n\nThe user has provided NO premise. You have absolute creative freedom. You must invent a brilliant, highly original story premise from scratch. Include this invented premise in the generated_spark field. Then, generate all the Level 1, 2, and 3 settings to perfectly match your new premise. You MUST provide an estimated episode counter in the target_episode_count field based organically on the scale of your invented story (e.g., 1 for a short film, 10 for a mini-series).";
     } else {
-      systemPrompt += `\n\nRaw Story Premise:\n"${raw_spark_text}"`;
+      systemPrompt += "\n\nRaw Story Premise:\n\"" + raw_spark_text + "\"";
     }
 
     if (trajectory) {
-      systemPrompt += `\n\n=== PACING OVERRIDE ===\n`;
-      systemPrompt += `You must strictly obey the user's progression termination mode.\n`;
+      systemPrompt += "\n\n=== PACING OVERRIDE ===\n";
+      systemPrompt += "You must strictly obey the user's progression termination mode.\n";
       if (trajectory.mode === "FIXED_GRID") {
-        systemPrompt += `The mode is FIXED_GRID. You must spread your Narrative Debt and resolution targets across exactly ${trajectory.target} episodes. Do not default to organic convergence unless explicitly instructed. Output 'fixed_grids' for progression_termination_mode and ${trajectory.target} for target_episode_count.\n`;
+        systemPrompt += "The mode is FIXED_GRID. You must spread your Narrative Debt and resolution targets across exactly " + trajectory.target + " episodes. Do not default to organic convergence unless explicitly instructed. Output 'fixed_grids' for progression_termination_mode and " + trajectory.target + " for target_episode_count.\n";
         
         if (trajectory.target === 1) {
-          systemPrompt += `CRITICAL CONSTRAINT: The user has requested exactly 1 episode (a short film / vignette). You MUST aggressively downscale the Cast Scale and Plot Device Scale. You are FORBIDDEN from generating more than 2 characters and 2 plot devices. A single episode will buckle under too much weight.\n`;
+          systemPrompt += "CRITICAL CONSTRAINT: The user has requested exactly 1 episode (a short film / vignette). You MUST aggressively downscale the Cast Scale and Plot Device Scale. You are FORBIDDEN from generating more than 2 characters and 2 plot devices. A single episode will buckle under too much weight.\n";
         } else if (trajectory.target <= 3) {
-          systemPrompt += `CRITICAL CONSTRAINT: The user has requested a very short run (${trajectory.target} episodes). Keep the Cast Scale and Plot Device Scale low (max 3 characters, max 3 plot devices) to avoid structural bloat.\n`;
+          systemPrompt += "CRITICAL CONSTRAINT: The user has requested a very short run (" + trajectory.target + " episodes). Keep the Cast Scale and Plot Device Scale low (max 3 characters, max 3 plot devices) to avoid structural bloat.\n";
         }
       } else if (trajectory.mode === "BOUNDED_RANGE") {
-        systemPrompt += `The mode is BOUNDED_RANGE. You must spread your Narrative Debt and resolution targets across between ${trajectory.min} and ${trajectory.max} episodes. Output 'bounded_range' for progression_termination_mode.\n`;
+        systemPrompt += "The mode is BOUNDED_RANGE. You must spread your Narrative Debt and resolution targets across between " + trajectory.min + " and " + trajectory.max + " episodes. Output 'bounded_range' for progression_termination_mode.\n";
       } else {
         systemPrompt += `The mode is ORGANIC_CONVERGENCE. You must let the story conclude naturally when all narrative debt is resolved. Output 'organic_convergence' for progression_termination_mode.\n`;
       }
