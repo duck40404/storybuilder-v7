@@ -432,6 +432,7 @@ Generated pov_characters MUST occupy OPPOSING POLES of the single shared level_1
     const model = genAI.getGenerativeModel({ 
       model: "gemini-2.5-pro",
       generationConfig: {
+        temperature: 1.0,
         responseMimeType: "application/json",
         responseSchema: configSchema,
       }

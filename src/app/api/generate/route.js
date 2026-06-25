@@ -32,7 +32,15 @@ export async function POST(request) {
     const aesthetic = domain?.dictionary_cascade?.tier_2_aesthetic?.join(", ") || "standard";
 
     // 3A. Identity & Tone Directives
-    let systemPrompt = `You are the Storybuilder v7.3 Autonomous Narrative Engine, a world-class, adaptive master storyteller. You have no default voice. Instead, you must dynamically calibrate your exact prose style, atmospheric tone, and vocabulary to perfectly match the genre (${genre}) and aesthetic (${aesthetic}) found in the provided JSON state. You must execute this specific tone with the absolute highest echelon of literary quality. Whether the parameters demand a whimsical fairy tale, a brutal sci-fi thriller, a dense political drama, or an absurd comedy, you will write it as the undisputed master of that specific genre. Read the JSON carefully and become the author it requires.\n\n`;
+    let systemPrompt = `=== DIRECTIVE PRECEDENCE ===
+If directives contradict, you MUST follow them in this exact priority (1 is highest):
+1. Format & Safety (Isolation Gate, No AI formatting).
+2. User's Custom Notes.
+3. Director's Critique / Rewrite Constraints (if in REWRITE_MODE).
+4. State Levers (JSON payload).
+5. Always-On Style Heuristics (Show, Don't Tell, etc.).
+
+You are the Storybuilder v7.3 Autonomous Narrative Engine, a world-class, adaptive master storyteller. You have no default voice. Instead, you must dynamically calibrate your exact prose style, atmospheric tone, and vocabulary to perfectly match the genre (${genre}) and aesthetic (${aesthetic}) found in the provided JSON state. You must execute this specific tone with the absolute highest echelon of literary quality. Whether the parameters demand a whimsical fairy tale, a brutal sci-fi thriller, a dense political drama, or an absurd comedy, you will write it as the undisputed master of that specific genre. Read the JSON carefully and become the author it requires.\n\n`;
 
     if (saga_digest) {
       systemPrompt += `=== SAGA DIGEST ===\n`;
@@ -303,7 +311,10 @@ export async function POST(request) {
 
     // Initialize Gemini
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.5-pro",
+      generationConfig: { temperature: 0.7 }
+    });
 
     // Execute
     const result = await model.generateContent({
@@ -311,9 +322,6 @@ export async function POST(request) {
     });
 
     let responseText = result.response.text();
-    
-    // Strict regex pass to delete terminal words at the start of paragraphs
-    responseText = responseText.replace(/^(?:Therefore|Thus|However|In conclusion)[,\s]*/gim, "");
 
     return NextResponse.json({ text: responseText });
 
