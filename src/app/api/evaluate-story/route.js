@@ -87,7 +87,7 @@ Your baseline starting score for any draft is a 4. The text must earn points by 
 === STRUCTURAL NOVELTY AXIS ===
 You must heavily scrutinize the script against this list of recently generated sagas.
 [RECENT FINGERPRINTS]:
-\${JSON.stringify(recentFingerprints, null, 2)}
+${JSON.stringify(recentFingerprints, null, 2)}
 
 If the current draft is structurally near-identical (in themes, character archetypes, ending resolutions, or plot beats) to the outputs in this list, its 'structural_novelty' score MUST be severely capped and flagged, regardless of how good the prose is. A low novelty score MUST trigger a STRUCTURAL-pivot rewrite directive in your critique, rather than just prose polish.
 

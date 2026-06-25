@@ -282,9 +282,7 @@ export default function ControlRoom() {
 
   // --- Hybrid Lock Updaters ---
   const updateHybridLocks = (updates) => {
-    updateState({
-      hybrid_locks: { ...hybridLocks, ...updates },
-    });
+    setHybridLocks(prev => ({ ...prev, ...updates }));
   };
 
   // --- Level 1.5 Updaters ---
