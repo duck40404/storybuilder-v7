@@ -613,9 +613,15 @@ export default function ControlRoom() {
       while (draftCount <= MAX_DRAFTS) {
         setGeneratedText(`... Executing Level 4 Vector Engine (Draft ${draftCount}) ...`);
         
+        const lastHistoryItem = loopState.level_1_5_saga?.episode_history?.slice(-1)[0];
+        const previousEpisodeText = lastHistoryItem ? lastHistoryItem.text : null;
+        const sagaDigest = loopState.level_1_5_saga?.cumulative_synopsis || null;
+
         // 1. Generate Draft
         const result = await compileEpisode(
           loopState, 
+          previousEpisodeText,
+          sagaDigest,
           currentCompilationMode === 'REWRITE_MODE' ? currentRewriteSliders : null, 
           currentCompilationMode, 
           customNotes, 

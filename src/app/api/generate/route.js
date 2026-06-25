@@ -11,6 +11,8 @@ export async function POST(request) {
     const custom_notes = body.custom_notes || "";
     const state_change_report = body.state_change_report || null;
     const director_critique = body.director_critique || null;
+    const previous_episode_text = body.previous_episode_text || null;
+    const saga_digest = body.saga_digest || null;
     
     if (!globalState) {
       return NextResponse.json({ error: "Missing global state" }, { status: 400 });
@@ -31,6 +33,17 @@ export async function POST(request) {
 
     // 3A. Identity & Tone Directives
     let systemPrompt = `You are the Storybuilder v7.3 Autonomous Narrative Engine, a world-class, adaptive master storyteller. You have no default voice. Instead, you must dynamically calibrate your exact prose style, atmospheric tone, and vocabulary to perfectly match the genre (${genre}) and aesthetic (${aesthetic}) found in the provided JSON state. You must execute this specific tone with the absolute highest echelon of literary quality. Whether the parameters demand a whimsical fairy tale, a brutal sci-fi thriller, a dense political drama, or an absurd comedy, you will write it as the undisputed master of that specific genre. Read the JSON carefully and become the author it requires.\n\n`;
+
+    if (saga_digest) {
+      systemPrompt += `=== SAGA DIGEST ===\n`;
+      systemPrompt += `The story so far: ${saga_digest}\n\n`;
+    }
+
+    if (previous_episode_text) {
+      systemPrompt += `=== CONTINUITY ANCHOR ===\n`;
+      systemPrompt += `Here is the verbatim text of the immediately preceding episode. CRITICAL INSTRUCTION: You must preserve the established voice, recurring imagery, and sentence rhythm found in this text. However, you are strictly FORBIDDEN from copying the content or events. This is purely to anchor your prose style and maintain continuity.\n`;
+      systemPrompt += `[PREVIOUS EPISODE TEXT]:\n${previous_episode_text}\n\n`;
+    }
 
     if (generation_mode === "REWRITE_MODE") {
       systemPrompt += `=== REVISION MODE ACTIVE ===\n`;
