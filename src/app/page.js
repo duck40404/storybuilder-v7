@@ -62,6 +62,35 @@ export default function ControlRoom() {
   const [showLoadDropdown, setShowLoadDropdown] = useState(false);
   const [isLoadingArchive, setIsLoadingArchive] = useState(false);
 
+  // Structured Brief Ingestion State
+  const [structuredBrief, setStructuredBrief] = useState("");
+  const [isIngesting, setIsIngesting] = useState(false);
+
+  const handleIngestBrief = async () => {
+    if (!structuredBrief.trim()) return;
+    setIsIngesting(true);
+    try {
+      const res = await fetch("/api/ingest-brief", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          brief_text: structuredBrief,
+          global_state: state.current_state
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        applyNewState(data.merged_state);
+        setStructuredBrief("");
+      } else {
+        alert("Failed to ingest brief: " + data.error);
+      }
+    } catch (e) {
+      alert("Error: " + e.message);
+    }
+    setIsIngesting(false);
+  };
+
   const transformActorArraysToObjects = (actorCards) => {
     if (!actorCards) return actorCards;
     const transform = (input) => {
@@ -985,6 +1014,31 @@ export default function ControlRoom() {
                   placeholder="Enter a premise, or leave completely blank for pure AI Genesis..."
                   className="w-full h-32 bg-black/40 border border-indigo-500/30 text-zinc-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/80 transition-all duration-300 resize-none placeholder-zinc-600"
                 />
+
+                {/* Structured Brief Ingestion */}
+                <div className="bg-black/20 border border-purple-500/20 rounded-xl p-5 space-y-4 mt-4">
+                  <h3 className="text-sm font-semibold text-purple-300 uppercase tracking-widest flex items-center space-x-2">
+                    <svg className="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                    <span>Structured Brief Ingestion</span>
+                  </h3>
+                  <textarea
+                    value={structuredBrief}
+                    onChange={(e) => setStructuredBrief(e.target.value)}
+                    placeholder="Paste a structured story brief (Tragedy, Geography, Character Matrices, etc.) to map explicitly to the engine's state tree and lock those layers..."
+                    className="w-full h-24 bg-black/40 border border-purple-500/30 text-zinc-100 rounded-xl p-4 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/80 transition-all duration-300 resize-none placeholder-zinc-600 text-sm"
+                  />
+                  <button
+                    onClick={handleIngestBrief}
+                    disabled={!structuredBrief.trim() || isIngesting}
+                    className={`flex items-center justify-center w-full px-6 py-3 rounded-xl font-medium transition-all duration-300 transform shadow-lg ${
+                      !structuredBrief.trim() || isIngesting
+                        ? "bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none"
+                        : "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white hover:-translate-y-0.5 hover:shadow-purple-500/25 active:translate-y-0 active:scale-[0.98]"
+                    }`}
+                  >
+                    {isIngesting ? "Ingesting & Mapping Brief..." : "📥 Ingest Brief (Text)"}
+                  </button>
+                </div>
 
                 {/* Saga Trajectory Controls */}
                 <div className="bg-black/20 border border-indigo-500/20 rounded-xl p-5 space-y-4">
