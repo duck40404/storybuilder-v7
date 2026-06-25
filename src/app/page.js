@@ -690,11 +690,6 @@ export default function ControlRoom() {
           } else {
             setGeneratedText(`Max retries reached. Final Draft:\n\n${result}`);
           }
-          
-          if (engineCapacity === 0 || loopState.level_1_kernel?.user_agency_regulator === 'automated') {
-            // Auto-advance
-            await handleAdvanceTimeline(result, loopState);
-          }
           break;
         } else {
           // Failed. Prepare Rewrite.
